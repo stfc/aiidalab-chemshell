@@ -1,5 +1,7 @@
 FROM ghcr.io/stfc/aiidalab-chemshell/base:latest 
 
+LABEL maintainer="Dr Benjamin T. Speake <benjamin.speake@stfc.ac.uk>"
+
 USER root 
 
 # Install Intel OneAPI HPC tookit 
