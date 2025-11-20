@@ -45,7 +45,7 @@ class MainAppView(ipw.VBox):
 
         subtitle = ipw.HTML(
             """
-            <h2 id='subtitle'>Welcome to the Ada Lovelace Center AiiDAlab App</h2>
+            <h2 id='subtitle'>Welcome to the ALC's AiiDAlab ChemShell App</h2>
             """
         )
 
