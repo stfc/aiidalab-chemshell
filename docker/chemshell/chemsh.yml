@@ -1,0 +1,9 @@
+label: chemsh
+description: ChemShell (parallel)
+computer: localhost
+filepath_executable: /opt/chemsh-py/bin/intel/chemsh
+default_calc_job_plugin: chemshell
+use_double_quotes: false
+with_mpi: false
+prepend_text: ''
+append_text: ''
