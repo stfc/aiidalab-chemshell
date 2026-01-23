@@ -40,3 +40,14 @@ class WorkflowOptions(Enum):
                 return "Nudged Elastic Band"
             case _:
                 return ""
+
+    @property
+    def tab_label(self) -> str:
+        """Create a tab title for the given enum option."""
+        match self:
+            case WorkflowOptions.GEOMETRY:
+                return "Optimisation"
+            case WorkflowOptions.NEB:
+                return "NEB"
+            case _:
+                return "ChemShell"

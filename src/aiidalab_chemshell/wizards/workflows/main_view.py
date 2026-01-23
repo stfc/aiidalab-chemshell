@@ -3,6 +3,7 @@
 import aiidalab_widgets_base as awb
 import ipywidgets as ipw
 
+from aiidalab_chemshell.common.chemshell import WorkflowOptions
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 from aiidalab_chemshell.wizards.workflows.geometry_optimisation import (
     ChemShellOptionsWidget,
@@ -49,13 +50,12 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         self.workflow_tabs = ipw.Tab()
 
         # Core Geometry Optimisation Workflow
-        self.workflow_tabs.set_title(0, "Geometry Optimisation")
-        self.workflow_tabs.set_title(1, "Gas Phase NEB")
+        for i, workflow in enumerate(WorkflowOptions):
+            self.workflow_tabs.set_title(i, workflow.tab_label)
 
         # Create the options widgets
         self.workflow_tabs.children = [
-            ChemShellOptionsWidget(self.model),
-            ipw.VBox(),
+            self._generate_workflow_widgets(workflow) for workflow in WorkflowOptions
         ]
 
         self.workflow_tabs.selected_index = self.model.workflow
@@ -112,3 +112,10 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             self.submit_btn.disabled = True
             self.workflow_tabs.children[0].disable(True)
         return
+
+    def _generate_workflow_widgets(self, workflow: WorkflowOptions) -> ipw.VBox:
+        match workflow:
+            case WorkflowOptions.GEOMETRY:
+                return ChemShellOptionsWidget(self.model)
+            case _:
+                return ipw.VBox()
