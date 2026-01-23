@@ -7,3 +7,5 @@ build/
 dist/
 .launcher.json 
 **.pyc 
+
+docs/source/api_docs/*
