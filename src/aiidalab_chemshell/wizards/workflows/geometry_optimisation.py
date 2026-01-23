@@ -1,7 +1,9 @@
 """Defines the input widget for the base geometry optimisation workflow."""
 
 import ipywidgets as ipw
+from traitlets import link
 
+from aiidalab_chemshell.common.chemshell import BasisSetOptions
 from aiidalab_chemshell.common.file_handling import FileUploadWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
@@ -46,13 +48,12 @@ class ChemShellOptionsWidget(ipw.VBox):
             layout={"width": "50%"},
         )
         self.qm_basis_dropdown = ipw.Dropdown(
-            options=["fast", "accurate"],
+            options={e.name: e for e in BasisSetOptions},
             description="Basis Quality:",
             disabled=False,
             layout={"width": "50%"},
         )
-        self.qm_basis_dropdown.observe(self._update_basis_quality, "selected_index")
-        self.qm_basis_dropdown.index = 1 if self.model.basis_quality else 0
+        link((self.model, "basis_quality"), (self.qm_basis_dropdown, "value"))
 
         self.enable_mm_chk = ipw.Checkbox(
             value=False, description="Use QM/MM", indent=True
@@ -118,12 +119,9 @@ class ChemShellOptionsWidget(ipw.VBox):
         self.ff_file.disable(not self.enable_mm_chk.value)
         return
 
-    def _update_basis_quality(self, _) -> None:
-        if self.qm_basis_dropdown.selected_index == 0:
-            self.model.basis_quality = False
-        else:
-            self.model.basis_quality = True
-        return
+    # def _update_basis_quality(self, _) -> None:
+    #     print(self.model.basis_quality)
+    #     return
 
     def render(self):
         """Render the options widget contents if not already rendered."""

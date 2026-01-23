@@ -106,10 +106,8 @@ class ChemShellProcess:
         builder.qm_parameters = Dict(
             {
                 "theory": self.model.workflow_model.qm_theory,
-                "basis": "cc-pvtz"
-                if self.model.workflow_model.basis_quality
-                else "cc-pvdz",
-                "method": "dft",
+                "basis": self.model.workflow_model.basis_quality.label,
+                "method": "hf",
                 "functional": "B3LYP",
             }
         )

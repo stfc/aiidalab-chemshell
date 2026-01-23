@@ -3,7 +3,7 @@
 from enum import Enum, auto
 
 
-class BasisSet(Enum):
+class BasisSetOptions(Enum):
     """Pre-defined basis set levels for simplified ChemShell inputs."""
 
     FAST = auto()
@@ -14,15 +14,15 @@ class BasisSet(Enum):
     def label(self) -> str:
         """Convert enum value to a string representation for ChemShell input."""
         match self:
-            case BasisSet.FAST:
+            case BasisSetOptions.FAST:
                 return "3-21G"
-            case BasisSet.BALANCED:
+            case BasisSetOptions.BALANCED:
                 return "cc-pvdz"
-            case BasisSet.QUALITY:
+            case BasisSetOptions.QUALITY:
                 return "aug-cc-pvtz"
 
 
-class Workflows(Enum):
+class WorkflowOptions(Enum):
     """Enum defining the available ChemShell based AiiDA workflows."""
 
     GEOMETRY = auto()
