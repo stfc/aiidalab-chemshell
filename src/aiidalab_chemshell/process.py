@@ -94,6 +94,10 @@ class ChemShellProcess:
 
     def submit_process(self):
         """Submit the AiiDA process."""
+        self._submit_optimisation_workflow()
+        return
+
+    def _submit_optimisation_workflow(self) -> None:
         builder = load_code(self.model.resource_model.code_label).get_builder()
         if self.model.structure_model.has_file:
             builder.structure = self.model.structure_model.structure_file
