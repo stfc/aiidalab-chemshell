@@ -8,4 +8,8 @@ dist/
 .launcher.json 
 **.pyc 
 
+# Api docs should be built through CI not included in repo
 docs/source/api_docs/*
+
+# Temporary notebook files 
+*-*ipynb
