@@ -24,10 +24,10 @@ class ResultsWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         self.model = model
 
         self.info = ipw.HTML(
-            """
+            f"""
             <p>
                 View the progress and results of the generated ChemShell
-                calculation process.
+                {self.model.workflow.label} workflow.
             </p>
             """
         )
@@ -53,7 +53,7 @@ class ResultsWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             msg = ipw.HTML(
                 """
                 <p>
-                    No process has been configured...
+                    No process has been submitted...
                 </p>
                 """
             )

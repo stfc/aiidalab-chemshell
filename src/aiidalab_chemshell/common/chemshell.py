@@ -20,6 +20,8 @@ class BasisSetOptions(Enum):
                 return "cc-pvdz"
             case BasisSetOptions.QUALITY:
                 return "aug-cc-pvtz"
+            case "":
+                return ""
 
 
 class WorkflowOptions(Enum):
@@ -27,3 +29,14 @@ class WorkflowOptions(Enum):
 
     GEOMETRY = auto()
     NEB = auto()
+
+    @property
+    def label(self) -> str:
+        """Convert enum value into a more human readable string."""
+        match self:
+            case WorkflowOptions.GEOMETRY:
+                return "Geometry Optimisation"
+            case WorkflowOptions.NEB:
+                return "Nudged Elastic Band"
+            case _:
+                return ""
