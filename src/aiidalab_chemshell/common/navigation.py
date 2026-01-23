@@ -6,6 +6,8 @@ import ipywidgets as ipw
 
 from aiidalab_chemshell.utils import open_link_in_new_tab
 
+_APPS_DIRECTORY = "/apps/apps/"
+
 
 class QuickAccessButtons(ipw.HBox):
     """Quick access buttons present in the apps header and start banner."""
@@ -27,7 +29,10 @@ class QuickAccessButtons(ipw.HBox):
             icon="plus",
         )
         self.new_calc_link.on_click(
-            partial(open_link_in_new_tab, "../aiidalab-chemshell/notebooks/main.ipynb")
+            partial(
+                open_link_in_new_tab,
+                _APPS_DIRECTORY + "aiidalab-chemshell/notebooks/main.ipynb",
+            )
         )
 
         self.history_link = ipw.Button(
@@ -39,7 +44,8 @@ class QuickAccessButtons(ipw.HBox):
         )
         self.history_link.on_click(
             partial(
-                open_link_in_new_tab, "../aiidalab-chemshell/notebooks/history.ipynb"
+                open_link_in_new_tab,
+                _APPS_DIRECTORY + "aiidalab-chemshell/notebooks/history.ipynb",
             )
         )
 
@@ -51,7 +57,7 @@ class QuickAccessButtons(ipw.HBox):
             icon="cogs",
         )
         self.resource_setup_link.on_click(
-            partial(open_link_in_new_tab, "../home/code_setup.ipynb")
+            partial(open_link_in_new_tab, _APPS_DIRECTORY + "home/code_setup.ipynb")
         )
 
         self.docs_link = ipw.Button(
