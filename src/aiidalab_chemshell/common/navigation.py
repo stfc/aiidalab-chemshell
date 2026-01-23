@@ -27,7 +27,7 @@ class QuickAccessButtons(ipw.HBox):
             icon="plus",
         )
         self.new_calc_link.on_click(
-            partial(open_link_in_new_tab, "../aiidalab-chemshell/main.ipynb")
+            partial(open_link_in_new_tab, "../aiidalab-chemshell/notebooks/main.ipynb")
         )
 
         self.history_link = ipw.Button(
@@ -38,7 +38,9 @@ class QuickAccessButtons(ipw.HBox):
             icon="history",
         )
         self.history_link.on_click(
-            partial(open_link_in_new_tab, "../aiidalab-chemshell/history.ipynb")
+            partial(
+                open_link_in_new_tab, "../aiidalab-chemshell/notebooks/history.ipynb"
+            )
         )
 
         self.resource_setup_link = ipw.Button(
@@ -47,7 +49,6 @@ class QuickAccessButtons(ipw.HBox):
             button_style="primary",
             tooltip="Configure Computational Resources",
             icon="cogs",
-            # on_click=partial(onLinkClickt get_app_dir() / "../home/code_setup.ipynb"),
         )
         self.resource_setup_link.on_click(
             partial(open_link_in_new_tab, "../home/code_setup.ipynb")

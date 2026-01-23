@@ -10,7 +10,7 @@ def get_start_widget(appbase, jupbase, notebase):
     logo = ipw.HTML(
         f"""
         <div class="app-container">
-            <a class="logo" href="{appbase}/main.ipynb" target="_blank">
+            <a class="logo" href="{appbase}/notebooks/main.ipynb" target="_blank">
             <img src="{appbase}/images/alc.svg" alt="ALC AiiDAlab App Logo" />
             </a>
         </div>
