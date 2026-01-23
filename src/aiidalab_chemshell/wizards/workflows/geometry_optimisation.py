@@ -1,100 +1,9 @@
-"""Module defining the MVC for ChemShell workflow configuration."""
+"""Defines the input widget for the base geometry optimisation workflow."""
 
-import aiidalab_widgets_base as awb
 import ipywidgets as ipw
-import traitlets as tl
-from aiida.orm import SinglefileData
 
 from aiidalab_chemshell.common.file_handling import FileUploadWidget
-
-
-class ChemShellWorkflowModel(tl.HasTraits):
-    """The model for setting up a ChemShell workflow."""
-
-    qm_theory = tl.Unicode("NONE", allow_none=False)
-    mm_theory = tl.Unicode("NONE", allow_none=True)
-    qm_region = tl.List([], allow_none=True)
-    basis_quality = tl.Bool(True, allow_none=False)
-    force_field = tl.Instance(SinglefileData, allow_none=True)
-    submitted = tl.Bool(False).tag(sync=True)
-    use_mm = tl.Bool(False).tag(sync=True)
-
-    default_guide = ""
-
-
-class MethodWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
-    """Wizard setup for the calculation workflow."""
-
-    def __init__(self, model: ChemShellWorkflowModel, **kwargs):
-        """
-        MethodWizardStep constructor.
-
-        Parameters
-        ----------
-        model : ChemShellWorkflowModel
-            The model that defines the data related to this step in the setup wizard.
-        **kwargs :
-            Keyword arguments passed to the parent class's constructor.
-        """
-        super().__init__(children=[], **kwargs)
-        self.model = model
-        self.rendered = False
-
-        return
-
-    def render(self):
-        """Render the wizard contents if not already rendered."""
-        if self.rendered:
-            return
-
-        self.header = ipw.HTML(
-            """
-            <h3> ChemShell QM/MM Geometry Optimisation </h3>
-            """,
-            layout={"margin": "auto"},
-        )
-        self.guide = ipw.HTML(
-            self.model.default_guide,
-        )
-
-        self.options_widget = ChemShellOptionsWidget(self.model)
-        ipw.dlink((self.options_widget.ff_file, "file"), (self.model, "force_field"))
-
-        self.submit_btn = ipw.Button(
-            description="Submit Options",
-            disbled=False,
-            button_style="success",
-            tooltip="Submit the workflow configuration",
-            icon="check",
-            layout={"margin": "auto", "width": "60%"},
-        )
-        self.submit_btn.on_click(self._submit)
-
-        self.children = [self.header, self.guide, self.options_widget, self.submit_btn]
-        self.rendered = True
-        return
-
-    def _submit(self, _):
-        """Store the ChemShell parameters in the ChemShell workflow model."""
-        self.model.qm_theory = self.options_widget.qm_theory_dropdown.value
-        self.model.mm_theory = self.options_widget.mm_theory_dropdown.value
-        try:
-            self.model.qm_region = [
-                int(x) for x in self.options_widget.qm_region_text.value.split(",")
-            ]
-        except ValueError:
-            self.model.qm_region.clear()
-            self.options_widget.qm_region_text.value = ""
-        except Exception as e:
-            raise e
-        if self.model.use_mm:
-            if not self.model.force_field:
-                print("ERROR: No force field file found...")
-                return
-        self.submit_btn.description = "Submitted"
-        self.submit_btn.disabled = True
-        self.options_widget.disable(True)
-        return
+from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
 
 class ChemShellOptionsWidget(ipw.VBox):
@@ -114,6 +23,21 @@ class ChemShellOptionsWidget(ipw.VBox):
         super().__init__(**kwargs)
         self.model = model
         self.rendered = False
+
+        self.header = ipw.HTML(
+            """
+            <h3> QM/MM Geometry Optimisation </h3>
+            """,
+            layout={"margin": "auto"},
+        )
+        self.guide = ipw.HTML(
+            """
+            <p>
+                Perform a geometry optimisation on the given structure via either QM or
+                QM/MM.
+            </p>
+            """
+        )
 
         self.qm_theory_dropdown = ipw.Dropdown(
             options=self._get_qm_theory_options(),
@@ -152,6 +76,8 @@ class ChemShellOptionsWidget(ipw.VBox):
         self.ff_file.disable(True)
 
         self.children = [
+            self.header,
+            self.guide,
             self.qm_theory_dropdown,
             self.qm_basis_dropdown,
             self.enable_mm_chk,

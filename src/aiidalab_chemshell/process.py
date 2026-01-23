@@ -5,10 +5,10 @@ from aiida.engine import submit
 from aiida.orm import Dict, load_code
 from ipywidgets import dlink
 
-from aiidalab_chemshell.resources import ComputationalResourcesModel
-from aiidalab_chemshell.results import ResultsModel
-from aiidalab_chemshell.structure import StructureStepModel
-from aiidalab_chemshell.workflow import ChemShellWorkflowModel
+from aiidalab_chemshell.models.structure import StructureInputModel
+from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
+from aiidalab_chemshell.wizards.resources import ComputationalResourcesModel
+from aiidalab_chemshell.wizards.results import ResultsModel
 
 
 class MainAppModel(tl.HasTraits):
@@ -19,7 +19,7 @@ class MainAppModel(tl.HasTraits):
     def __init__(self):
         """MainAppModel constructor."""
         super().__init__()
-        self.structure_model = StructureStepModel()
+        self.structure_model = StructureInputModel()
         self.workflow_model = ChemShellWorkflowModel()
         self.resource_model = ComputationalResourcesModel()
         self.results_model = ResultsModel()
@@ -129,6 +129,8 @@ class ChemShellProcess:
         builder.optimisation_parameters = Dict({})
         if self.model.resource_model.ncpus > 1:
             builder.metadata.options.withmpi = True
+        else:
+            builder.metadata.options.withmpi = False
         builder.metadata.options.resources = {
             "num_mpiprocs_per_machine": self.model.resource_model.ncpus,
             "num_cores_per_machine": self.model.resource_model.ncpus,
