@@ -1,9 +1,9 @@
 label: chemsh
 description: ChemShell (parallel)
 computer: localhost
-filepath_executable: /opt/chemsh-py/bin/intel/chemsh
+filepath_executable: /opt/chemsh-py/bin/intel/chemsh.x
 default_calc_job_plugin: chemshell
 use_double_quotes: false
-with_mpi: false
+with_mpi: true
 prepend_text: ''
 append_text: ''
