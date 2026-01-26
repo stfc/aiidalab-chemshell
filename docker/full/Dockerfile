@@ -3,6 +3,7 @@ FROM ghcr.io/stfc/aiidalab-chemshell/base:latest
 # a pre-installed version of aiidalab-chemshell
 
 LABEL maintainer="Dr Benjamin T. Speake <benjamin.speake@stfc.ac.uk>"
+LABEL org.opencontainers.image.source="https://github.com/stfc/aiidalab-chemshell"
 
 USER root 
 
