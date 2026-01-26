@@ -5,19 +5,19 @@ from traitlets import (
     Bool,
     HasTraits,
     Instance,
-    Integer,
     List,
     Unicode,
     UseEnum,
 )
 
-from aiidalab_chemshell.common.chemshell import BasisSetOptions
+from aiidalab_chemshell.common.chemshell import BasisSetOptions, WorkflowOptions
 
 
 class ChemShellWorkflowModel(HasTraits):
     """The model for setting up a ChemShell workflow."""
 
-    workflow = Integer(0, allow_none=False).tag(sync=True)
+    # workflow = Integer(0, allow_none=False).tag(sync=True)
+    workflow = UseEnum(WorkflowOptions, WorkflowOptions.GEOMETRY, allow_none=False)
 
     qm_theory = Unicode("NWChem", allow_none=False)
     mm_theory = Unicode("DL_POLY", allow_none=True)

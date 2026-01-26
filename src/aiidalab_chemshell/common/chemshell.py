@@ -6,7 +6,7 @@ from enum import Enum, auto
 class BasisSetOptions(Enum):
     """Pre-defined basis set levels for simplified ChemShell inputs."""
 
-    FAST = auto()
+    FAST = 0
     BALANCED = auto()
     QUALITY = auto()
 
@@ -27,7 +27,7 @@ class BasisSetOptions(Enum):
 class WorkflowOptions(Enum):
     """Enum defining the available ChemShell based AiiDA workflows."""
 
-    GEOMETRY = auto()
+    GEOMETRY = 0
     NEB = auto()
 
     @property

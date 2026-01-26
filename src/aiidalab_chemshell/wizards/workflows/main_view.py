@@ -58,10 +58,11 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             self._generate_workflow_widgets(workflow) for workflow in WorkflowOptions
         ]
 
-        self.workflow_tabs.selected_index = self.model.workflow
+        self.workflow_tabs.selected_index = self.model.workflow.value
 
         # Link necessary inputs to model
-        ipw.dlink((self.workflow_tabs, "selected_index"), (self.model, "workflow"))
+        # ipw.dlink((self.workflow_tabs, "selected_index"), (self.model, "workflow"))
+        self.workflow_tabs.observe(self._update_selected_workflow, "selected_index")
         ipw.dlink(
             (self.workflow_tabs.children[0].ff_file, "file"),
             (self.model, "force_field"),
@@ -119,3 +120,8 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
                 return ChemShellOptionsWidget(self.model)
             case _:
                 return ipw.VBox()
+
+    def _update_selected_workflow(self, _) -> None:
+        self.model.workflow = WorkflowOptions(self.workflow_tabs.selected_index)
+        print(self.model.workflow)
+        return

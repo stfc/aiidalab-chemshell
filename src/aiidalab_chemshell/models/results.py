@@ -14,6 +14,5 @@ class ResultsModel(ProcessModel):
         WorkflowOptions,
         WorkflowOptions.GEOMETRY,
         allow_none=False,
-        read_only=True,
         help="The workflow that has been carried out.",
     )

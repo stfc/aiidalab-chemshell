@@ -26,6 +26,7 @@ class MainAppModel(tl.HasTraits):
 
         self.resource_model.observe(self._submit_model, "submitted")
         dlink((self, "block_results"), (self.results_model, "blocked"))
+        dlink((self.workflow_model, "workflow"), (self.results_model, "workflow"))
 
         self.process = None
 
