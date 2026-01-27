@@ -31,7 +31,7 @@ class MainAppView(ipw.VBox):
         logo = ipw.HTML(
             """
             <div class="app-container logo" style="width: 300px;">
-                <img src="./images/alc.svg" alt="ALC AiiDAlab App Logo" />
+                <img src="../images/alc.svg" alt="ALC AiiDAlab App Logo" />
             </div>
             """,
             layout={"margin": "auto"},
