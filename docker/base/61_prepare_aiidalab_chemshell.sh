@@ -11,7 +11,7 @@ fi
 
 # Install the associated python package 
 cd "${HOME}"/apps/aiidalab-chemshell 
-pip install --no-user --no-cache-dir -q -e . 
+pip install -e . --no-user --no-cache-dir -q  
 
 # Return to the $HOME directory 
 cd "${HOME}" 
