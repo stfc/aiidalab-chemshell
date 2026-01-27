@@ -108,7 +108,7 @@ class ChemShellProcess:
             {
                 "theory": self.model.workflow_model.qm_theory,
                 "basis": self.model.workflow_model.basis_quality.label,
-                "method": "hf",
+                "method": "dft" if self.model.workflow_model.use_dft else "hf",
                 "functional": "B3LYP",
             }
         )

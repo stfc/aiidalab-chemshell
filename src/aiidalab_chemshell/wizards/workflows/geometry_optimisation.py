@@ -41,12 +41,15 @@ class ChemShellOptionsWidget(ipw.VBox):
             """
         )
 
+        # QM Backend
         self.qm_theory_dropdown = ipw.Dropdown(
             options=self._get_qm_theory_options(),
             description="QM Theory:",
             disabled=False,
             layout={"width": "50%"},
         )
+
+        # Basis Quality
         self.qm_basis_dropdown = ipw.Dropdown(
             options={e.name: e for e in BasisSetOptions},
             description="Basis Quality:",
@@ -55,17 +58,26 @@ class ChemShellOptionsWidget(ipw.VBox):
         )
         link((self.model, "basis_quality"), (self.qm_basis_dropdown, "value"))
 
+        # DFT checkbox
+        self.enable_dft = ipw.Checkbox(value=False, description="Use DFT", index=True)
+        ipw.dlink((self.enable_dft, "value"), (self.model, "use_dft"))
+
+        # QM/MM Checkbox
         self.enable_mm_chk = ipw.Checkbox(
             value=False, description="Use QM/MM", indent=True
         )
         self.enable_mm_chk.observe(self._enable_mm_options, "value")
         ipw.dlink((self.enable_mm_chk, "value"), (self.model, "use_mm"))
+
+        # MM Backend
         self.mm_theory_dropdown = ipw.Dropdown(
             options=self._get_mm_theory_options(),
             description="MM Theory:",
             disabled=True,
             layout={"width": "50%"},
         )
+
+        # QM region for QM/MM calculation
         self.qm_region_text = ipw.Text(
             value="",
             description="QM Region:",
@@ -73,6 +85,7 @@ class ChemShellOptionsWidget(ipw.VBox):
             layout={"width": "50%"},
         )
 
+        # Force Field File
         self.ff_file = FileUploadWidget(description="Force Field:")
         self.ff_file.disable(True)
 
@@ -81,6 +94,7 @@ class ChemShellOptionsWidget(ipw.VBox):
             self.guide,
             self.qm_theory_dropdown,
             self.qm_basis_dropdown,
+            self.enable_dft,
             self.enable_mm_chk,
             self.mm_theory_dropdown,
             self.qm_region_text,

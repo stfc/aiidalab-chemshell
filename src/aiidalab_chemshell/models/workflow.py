@@ -22,6 +22,7 @@ class ChemShellWorkflowModel(HasTraits):
     qm_theory = Unicode("NWChem", allow_none=False)
     mm_theory = Unicode("DL_POLY", allow_none=True)
     qm_region = List([], allow_none=True)
+    use_dft = Bool(False).tag(sync=True)
     basis_quality = UseEnum(BasisSetOptions, BasisSetOptions.FAST, allow_none=False)
     force_field = Instance(SinglefileData, allow_none=True)
     submitted = Bool(False).tag(sync=True)
