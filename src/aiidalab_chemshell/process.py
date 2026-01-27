@@ -5,10 +5,10 @@ from aiida.engine import submit
 from aiida.orm import Dict, load_code
 from ipywidgets import dlink
 
-from aiidalab_chemshell.resources import ComputationalResourcesModel
-from aiidalab_chemshell.results import ResultsModel
-from aiidalab_chemshell.structure import StructureStepModel
-from aiidalab_chemshell.workflow import ChemShellWorkflowModel
+from aiidalab_chemshell.models.structure import StructureInputModel
+from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
+from aiidalab_chemshell.wizards.resources import ComputationalResourcesModel
+from aiidalab_chemshell.wizards.results import ResultsModel
 
 
 class MainAppModel(tl.HasTraits):
@@ -19,13 +19,14 @@ class MainAppModel(tl.HasTraits):
     def __init__(self):
         """MainAppModel constructor."""
         super().__init__()
-        self.structure_model = StructureStepModel()
+        self.structure_model = StructureInputModel()
         self.workflow_model = ChemShellWorkflowModel()
         self.resource_model = ComputationalResourcesModel()
         self.results_model = ResultsModel()
 
         self.resource_model.observe(self._submit_model, "submitted")
         dlink((self, "block_results"), (self.results_model, "blocked"))
+        dlink((self.workflow_model, "workflow"), (self.results_model, "workflow"))
 
         self.process = None
 
@@ -94,6 +95,10 @@ class ChemShellProcess:
 
     def submit_process(self):
         """Submit the AiiDA process."""
+        self._submit_optimisation_workflow()
+        return
+
+    def _submit_optimisation_workflow(self) -> None:
         builder = load_code(self.model.resource_model.code_label).get_builder()
         if self.model.structure_model.has_file:
             builder.structure = self.model.structure_model.structure_file
@@ -102,10 +107,8 @@ class ChemShellProcess:
         builder.qm_parameters = Dict(
             {
                 "theory": self.model.workflow_model.qm_theory,
-                "basis": "cc-pvtz"
-                if self.model.workflow_model.basis_quality
-                else "cc-pvdz",
-                "method": "dft",
+                "basis": self.model.workflow_model.basis_quality.label,
+                "method": "dft" if self.model.workflow_model.use_dft else "hf",
                 "functional": "B3LYP",
             }
         )
@@ -125,6 +128,8 @@ class ChemShellProcess:
         builder.optimisation_parameters = Dict({})
         if self.model.resource_model.ncpus > 1:
             builder.metadata.options.withmpi = True
+        else:
+            builder.metadata.options.withmpi = False
         builder.metadata.options.resources = {
             "num_mpiprocs_per_machine": self.model.resource_model.ncpus,
             "num_cores_per_machine": self.model.resource_model.ncpus,
