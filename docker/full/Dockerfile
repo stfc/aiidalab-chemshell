@@ -1,6 +1,4 @@
 FROM ghcr.io/stfc/aiidalab-chemshell/base:latest 
-# Use ghcr.io/stfc/alc-ux/base:py310 for a developer focused container without
-# a pre-installed version of aiidalab-chemshell
 
 LABEL maintainer="Dr Benjamin T. Speake <benjamin.speake@stfc.ac.uk>"
 LABEL org.opencontainers.image.source="https://github.com/stfc/aiidalab-chemshell"
@@ -20,6 +18,7 @@ RUN apt update --yes && apt upgrade --yes && apt install --yes gpg wget cmake &&
 COPY ../chemsh-py/. /opt/chemsh-py 
 WORKDIR /opt/chemsh-py 
 RUN source /opt/intel/oneapi/setvars.sh && \
+    pip install pyscf --no-user && \
     ./setup -j 4 -fc mpiifx -cc mpiicx -cpc mpiicpx --mpi --dl_poly --nwchem 
 
 COPY 62_setup_chemsh.sh /usr/local/bin/before-notebook.d/
