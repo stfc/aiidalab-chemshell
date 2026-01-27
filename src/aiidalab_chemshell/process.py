@@ -137,4 +137,6 @@ class ChemShellProcess:
             "tot_num_mpiprocs": self.model.resource_model.ncpus,
         }
         self.node = submit(builder)
+        self.node.label = self.model.resource_model.process_label
+        self.node.description = self.model.resource_model.process_description
         return
