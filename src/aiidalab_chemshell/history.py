@@ -3,13 +3,14 @@
 from datetime import datetime
 
 from aiida.orm import CalcJobNode, WorkChainNode
-from aiidalab_widgets_base import AiidaNodeViewWidget, ProcessNodesTreeWidget
+from aiidalab_widgets_base import ProcessNodesTreeWidget
 from IPython.display import display
 from ipywidgets import HTML, VBox, dlink
 
 from aiidalab_chemshell.common.database import AiiDADatabaseWidget
 from aiidalab_chemshell.common.navigation import QuickAccessButtons
-from aiidalab_chemshell.results import ProcessModel
+from aiidalab_chemshell.common.node_viewers import CustomAiidaNodeViewWidget
+from aiidalab_chemshell.models.process import ProcessModel
 
 
 class HistoryApp:
@@ -75,6 +76,7 @@ class HistoryAppView(VBox):
             """,
             layout={"align-content": "right"},
         )
+        h_line = HTML("<hr>")
 
         self.guide = HTML(
             """
@@ -92,7 +94,7 @@ class HistoryAppView(VBox):
 
         self.node_tree = ProcessNodesTreeWidget()
         dlink((self.model, "process_uuid"), (self.node_tree, "value"))
-        self.node_view = AiidaNodeViewWidget()
+        self.node_view = CustomAiidaNodeViewWidget()
         dlink(
             (self.node_tree, "selected_nodes"),
             (self.node_view, "node"),
@@ -106,6 +108,7 @@ class HistoryAppView(VBox):
                 nav_btns,
                 self.guide,
                 self.lookup_widget,
+                h_line,
                 self.node_tree,
                 self.node_view,
                 footer,
