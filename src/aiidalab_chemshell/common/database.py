@@ -7,7 +7,6 @@ import traitlets as tl
 from aiida.orm import (
     CalcFunctionNode,
     CalcJobNode,
-    Data,
     Node,
     QueryBuilder,
     WorkChainNode,
@@ -17,9 +16,9 @@ from aiida.orm import (
 class AiiDADatabaseWidget(ipw.VBox, tl.HasTraits):
     """Widget for AiiDA database querying."""
 
-    data_object = tl.Instance(Data, allow_none=True)
+    data_object = tl.Instance(Node, allow_none=True)
 
-    def __init__(self, title: str = "", query: list = None):
+    def __init__(self, title: str = "", query: list | None = None):
         if query is None:
             query = []
         self.title = title
@@ -147,7 +146,7 @@ class AiiDADatabaseWidget(ipw.VBox, tl.HasTraits):
         matches = {n[0] for n in qbuild.iterall()}
         matches = sorted(matches, reverse=True, key=lambda n: n.ctime)
 
-        options = [(f"Select a Structure ({len(matches)} found)", False)]
+        options = [(f"Select a Node ({len(matches)} found)", False)]
         for mch in matches:
             label = f"PK: {mch.pk}"
             label += " | " + mch.ctime.strftime("%Y-%m-%d %H:%M")

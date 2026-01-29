@@ -26,7 +26,6 @@ class MainAppModel(tl.HasTraits):
 
         self.resource_model.observe(self._submit_model, "submitted")
         dlink((self, "block_results"), (self.results_model, "blocked"))
-        dlink((self.workflow_model, "workflow"), (self.results_model, "workflow"))
 
         self.process = None
 
@@ -137,4 +136,6 @@ class ChemShellProcess:
             "tot_num_mpiprocs": self.model.resource_model.ncpus,
         }
         self.node = submit(builder)
+        self.node.label = self.model.resource_model.process_label
+        self.node.description = self.model.resource_model.process_description
         return
