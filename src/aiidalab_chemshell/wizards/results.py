@@ -25,10 +25,10 @@ class ResultsWizardStep(ipw.VBox, WizardAppWidgetStep):
         self.model = model
 
         self.info = ipw.HTML(
-            f"""
+            """
             <p>
                 View the progress and results of the generated ChemShell
-                {self.model.workflow.label} workflow.
+                workflow.
             </p>
             """
         )
