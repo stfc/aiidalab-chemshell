@@ -39,7 +39,7 @@ jobs:
       - name: Extract the package version 
         run: | 
           echo "VERSION=$(python -c '
-          from aiida_alc import __version__
+          from aiidalab_chemshell import __version__
           print(__version__)
           ')" >> $GITHUB_ENV
       
