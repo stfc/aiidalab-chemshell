@@ -1,7 +1,7 @@
 # AiiDAlab ChemShell Plugin
 
-![Release](https://img.shields.io/badge/Release-none-red)
-[![PyPI Version](https://img.shields.io/badge/PyPI-none-red)](https://pypi.org/)
+[![Release](https://img.shields.io/github/v/release/stfc/aiidalab-chemshell)](https://github.com/stfc/aiidalab-chemshell/releases)
+[![PyPI](https://img.shields.io/pypi/v/aiidalab-chemshell)](https://pypi.org/project/aiidalab-chemshell/)
 
 [![Pipeline Status](https://github.com/stfc/aiidalab-chemshell/actions/workflows/ci-testing.yml/badge.svg?branch=main)](https://github.com/stfc/aiidalab-chemshell/actions)
 [![Docs status](https://github.com/stfc/aiidalab-chemshell/actions/workflows/ci-docs.yml/badge.svg?branch=main)](https://stfc.github.io/aiidalab-chemshell/)
