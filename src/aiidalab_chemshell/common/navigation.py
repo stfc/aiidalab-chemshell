@@ -57,7 +57,10 @@ class QuickAccessButtons(ipw.HBox):
             icon="cogs",
         )
         self.resource_setup_link.on_click(
-            partial(open_link_in_new_tab, _APPS_DIRECTORY + "home/code_setup.ipynb")
+            partial(
+                open_link_in_new_tab,
+                _APPS_DIRECTORY + "aiidalab-chemshell/notebooks/resources.ipynb",
+            )
         )
 
         self.docs_link = ipw.Button(

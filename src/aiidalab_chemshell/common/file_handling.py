@@ -51,11 +51,16 @@ class FileUploadWidget(HBox, tl.HasTraits):
     def _on_file_upload(self, _):
         """Handle file upload events."""
         if self.file_upload.value:
-            self.file_dict = self.file_upload.value[
-                list(self.file_upload.value.keys())[0]
-            ]
-            self.file_handle.value = self.file_dict["metadata"]["name"]
-            self.file = self.get_aiida_file_object()
+            try:
+                self.file_dict = self.file_upload.value[
+                    list(self.file_upload.value.keys())[0]
+                ]
+                self.file_handle.value = self.file_dict["metadata"]["name"]
+            except AttributeError:
+                self.file_dict = self.file_upload.value[0]
+                self.file_handle.value = self.file_dict["name"]
+            finally:
+                self.file = self.get_aiida_file_object()
         else:
             self.file_handle.value = ""
         return
@@ -69,7 +74,10 @@ class FileUploadWidget(HBox, tl.HasTraits):
     def filename(self) -> str:
         """Get the name of the uploaded file."""
         if self.file_dict is not None:
-            return self.file_dict["metadata"]["name"]
+            try:
+                return self.file_dict["metadata"]["name"]
+            except KeyError:
+                return self.file_dict["name"]
         return ""
 
     def get_aiida_file_object(self):

@@ -49,14 +49,13 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
 
         self.workflow_tabs = ipw.Tab()
 
-        # Core Geometry Optimisation Workflow
-        for i, workflow in enumerate(WorkflowOptions):
-            self.workflow_tabs.set_title(i, workflow.tab_label)
-
         # Create the options widgets
         self.workflow_tabs.children = [
             self._generate_workflow_widgets(workflow) for workflow in WorkflowOptions
         ]
+        # Core Geometry Optimisation Workflow
+        for i, workflow in enumerate(WorkflowOptions):
+            self.workflow_tabs.set_title(i, workflow.tab_label)
 
         self.workflow_tabs.selected_index = self.model.workflow.value
 
