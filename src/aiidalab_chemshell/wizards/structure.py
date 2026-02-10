@@ -3,17 +3,18 @@
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-import aiidalab_widgets_base as awb
 import ase
 import ipywidgets as ipw
 from aiida.orm import SinglefileData, StructureData
+from aiidalab_widgets_base import SmilesWidget, WizardAppWidgetStep
+from weas_widget import WeasWidget
 
 from aiidalab_chemshell.common.database import AiiDADatabaseWidget
 from aiidalab_chemshell.common.file_handling import FileUploadWidget
 from aiidalab_chemshell.models.structure import StructureInputModel
 
 
-class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
+class StructureWizardStep(ipw.VBox, WizardAppWidgetStep):
     """
     Wizard for structure selection and manipulation.
 
@@ -60,7 +61,7 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             query=[SinglefileData, StructureData],
         )
 
-        self.smiles_widget = awb.SmilesWidget(title="SMILES")
+        self.smiles_widget = SmilesWidget(title="SMILES")
 
         self.tabs.children = [
             self.file_input_widget,
@@ -117,6 +118,7 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         """When SMILES string is inputted."""
         if change["new"] != change["old"]:
             self._create_viewer(change["new"])
+            self.model.structure = StructureData(ase=change["new"])
         return
 
     def _on_database_search(self, change: dict) -> None:
@@ -147,7 +149,9 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
     def _create_viewer(self, structure: ase.Atoms | None) -> None:
         """Create a viewer widget with the loaded ase.Atoms structure object."""
         if structure:
-            self.viewer = awb.viewers.StructureDataViewer(structure=structure)
+            # self.viewer = awb.viewers.StructureDataViewer(structure=structure)
+            self.viewer = WeasWidget()
+            self.viewer.from_ase(structure)
         else:
             self.viewer = ipw.HTML("<p>Could not visualise structure ...</p>")
         self._update_children()
