@@ -6,7 +6,7 @@ from tempfile import NamedTemporaryFile
 import aiidalab_widgets_base as awb
 import ase
 import ipywidgets as ipw
-from aiida.orm import SinglefileData
+from aiida.orm import SinglefileData, StructureData
 
 from aiidalab_chemshell.common.database import AiiDADatabaseWidget
 from aiidalab_chemshell.common.file_handling import FileUploadWidget
@@ -47,7 +47,6 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         self.tabs = ipw.Tab()
 
         # upload file
-        # self.tabs.set_title(0, "Upload File")
         self.file_input_widget = ipw.VBox()
         self.file_uploader = FileUploadWidget(description="Structure file: ")
         self.file_input_widget.children = [
@@ -56,14 +55,10 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         ipw.dlink((self.file_uploader, "file"), (self.model, "structure_file"))
 
         # AiiDA database
-        # self.tabs.set_title(1, "AiiDA Database")
         self.database_widget = AiiDADatabaseWidget(
             title="AiiDA Database",
-            query=[
-                SinglefileData,
-            ],
+            query=[SinglefileData, StructureData],
         )
-        ipw.dlink((self.database_widget, "data_object"), (self.model, "structure_file"))
 
         self.smiles_widget = awb.SmilesWidget(title="SMILES")
 
@@ -76,6 +71,7 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             self.tabs.set_title(i, title)
 
         self.model.observe(self._on_file_upload, "structure_file")
+        self.database_widget.observe(self._on_database_search, "data_object")
         self.smiles_widget.observe(self._on_smiles_generation, "structure")
 
     def render(self):
@@ -108,27 +104,33 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         ]
         return
 
-    def _on_file_upload(self, change=None):
+    def _on_file_upload(self, change: dict) -> None:
         """When file upload button is pressed."""
         if self.model.has_file:
             structure = self._get_ase_object_from_file(
                 self.model.structure_file.filename, self.model.structure_file.content
             )
-            if structure:
-                self.viewer = awb.viewers.StructureDataViewer(structure=structure)
-            else:
-                self.viewer = ipw.HTML(
-                    "<p>Could not visualise structure from file...</p>"
-                )
-            self._update_children()
+            self._create_viewer(structure)
         return
 
-    def _on_smiles_generation(self, change=None):
+    def _on_smiles_generation(self, change: dict) -> None:
         """When SMILES string is inputted."""
-        self.viewer = awb.viewers.StructureDataViewer(
-            structure=self.smiles_widget.structure
-        )
-        self._update_children()
+        if change["new"] != change["old"]:
+            self._create_viewer(change["new"])
+        return
+
+    def _on_database_search(self, change: dict) -> None:
+        """When data is loaded from AiiDA database."""
+        if change["new"] == change["old"]:
+            return
+        if isinstance(change["new"], SinglefileData):
+            self.model.structure_file = change["new"]
+            self._on_file_upload(change)
+        elif isinstance(change["new"], StructureData):
+            self.model.structure = change["new"]
+            self._create_viewer(change["new"]._get_object_ase())
+        else:
+            self._create_viewer(None)
         return
 
     def _get_ase_object_from_file(self, fname: str, content: bytes) -> ase.Atoms | None:
@@ -141,6 +143,15 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             except (KeyError, ase.io.formats.UnknownFileTypeError):
                 structure = None
         return structure
+
+    def _create_viewer(self, structure: ase.Atoms | None) -> None:
+        """Create a viewer widget with the loaded ase.Atoms structure object."""
+        if structure:
+            self.viewer = awb.viewers.StructureDataViewer(structure=structure)
+        else:
+            self.viewer = ipw.HTML("<p>Could not visualise structure ...</p>")
+        self._update_children()
+        return
 
     def submit_structure(self, _):
         """Submit the structure step."""

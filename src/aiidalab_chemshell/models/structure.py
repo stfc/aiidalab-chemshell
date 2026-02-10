@@ -1,10 +1,10 @@
 """The structure input model for ChemShell input configuration."""
 
-import traitlets as tl
 from aiida.orm import SinglefileData, StructureData
+from traitlets import Bool, HasTraits, Instance, observe
 
 
-class StructureInputModel(tl.HasTraits):
+class StructureInputModel(HasTraits):
     """
     Model for structure selection and manipulation.
 
@@ -12,9 +12,9 @@ class StructureInputModel(tl.HasTraits):
     step in the app's configuration wizard.
     """
 
-    structure = tl.Instance(StructureData, allow_none=True)
-    structure_file = tl.Instance(SinglefileData, allow_none=True)
-    submitted = tl.Bool(False).tag(sync=True)
+    structure = Instance(StructureData, allow_none=True)
+    structure_file = Instance(SinglefileData, allow_none=True)
+    submitted = Bool(False).tag(sync=True)
 
     @property
     def has_structure(self) -> bool:
@@ -32,3 +32,9 @@ class StructureInputModel(tl.HasTraits):
         if self.has_structure:
             return any(self.structure.pbc)
         return False
+
+    @observe("structure")
+    def _update_structure(self, _) -> None:
+        """Remove any file associated if a StructureData object is provided."""
+        self.structure_file = None
+        return
