@@ -65,11 +65,18 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         )
         ipw.dlink((self.database_widget, "data_object"), (self.model, "structure_file"))
 
-        self.tabs.children = [self.file_input_widget, self.database_widget]
-        for i, title in enumerate(["Upload File", "AiiDA Database"]):
+        self.smiles_widget = awb.SmilesWidget(title="SMILES")
+
+        self.tabs.children = [
+            self.file_input_widget,
+            self.database_widget,
+            self.smiles_widget,
+        ]
+        for i, title in enumerate(["Upload File", "AiiDA Database", "SMILES String"]):
             self.tabs.set_title(i, title)
 
         self.model.observe(self._on_file_upload, "structure_file")
+        self.smiles_widget.observe(self._on_smiles_generation, "structure")
 
     def render(self):
         """Render the wizard's contents if not already rendered."""
@@ -114,6 +121,14 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
                     "<p>Could not visualise structure from file...</p>"
                 )
             self._update_children()
+        return
+
+    def _on_smiles_generation(self, change=None):
+        """When SMILES string is inputted."""
+        self.viewer = awb.viewers.StructureDataViewer(
+            structure=self.smiles_widget.structure
+        )
+        self._update_children()
         return
 
     def _get_ase_object_from_file(self, fname: str, content: bytes) -> ase.Atoms | None:
