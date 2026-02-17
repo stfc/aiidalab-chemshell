@@ -3,6 +3,9 @@
 ChemShell Workflow Configuration
 ================================
 
+.. figure:: ../../../images/screenshots/workflow_page.png
+
+
 This is the main page for the AiiDAlab ChemShell plugin and allows users to configure
 and submit ChemShell based computational calculations and view a summary of key results.
 The page consists of a header with the same navigational components as the start banner
@@ -21,6 +24,9 @@ process.
 
 Structure Input 
 ~~~~~~~~~~~~~~~
+
+.. figure:: ../../../images/screenshots/structure_step.png
+
 
 This is the first step and often the foundation of any workflow based on chemical
 modelling. It provides several options for uploading a chemical structure to the
@@ -55,6 +61,9 @@ include:
 Workflow Setup
 ~~~~~~~~~~~~~~
 
+.. figure:: ../../../images/screenshots/workflow_step.png
+
+
 This is the core step in configuring the different available workflows within the
 AiiDAlab ChemShell plugin. It provides different tabs for each of the available 
 workflows (see :ref:`available_workflows`) each providing a tailored UI with various
@@ -65,6 +74,8 @@ further tailor the workflow to suite their specific needs.
 
 Resource Setup
 ~~~~~~~~~~~~~~
+
+.. figure:: ../../../images/screenshots/code_step.png
 
 This step enables the user to define where and how the underlying ChemShell
 software will run. The core inputs are the *AiiDA code instance* which tells
@@ -82,6 +93,8 @@ on how these values are useful.
 Job Monitor & Results
 ~~~~~~~~~~~~~~~~~~~~~
 
+.. figure:: ../../../images/screenshots/results_step_waiting.png
+
 The final step for the wizard is a combined job monitor and results viewer. This
 UI component is only available once all previous stages have been completed and a 
 workflow has been successfully submitted. Once submitted it will appear in the 
@@ -92,6 +105,8 @@ Once finished they will typically be given one of two status keys, if the proces
 finished normally it will be labelled as *finished*. If if has failed for any reason
 it will generally be given the *excepted* key.
 
+.. figure:: ../../../images/screenshots/results_step_finished.png
+
 Once a process has finished its associated results objects will be listed in the 
 displayed access tree under *outputs*. This may require a *refresh* to be properly
 updated which can be carried out via the *refresh* button at the bottom of the UI.
@@ -99,6 +114,16 @@ Each of the listed results can then be clicked on and visualised in the display
 either as references to their AiiDA database object or as a more detailed viewer 
 if one is supported for the data type. 
 
+
+.. note:: Energies outputted by ChemShell are typically in **atomic units** (Hartree). Common conversions 
+    are:
+
+    - 1 Hartree
+    - 27.211386 eV
+    - 2625.50 kJ/mol
+    - 627.509 kcal/mol
+    - 2.194746 wavenumbers
+    - 4.359745x10-18 Joules
 
 
 
