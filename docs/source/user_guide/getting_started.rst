@@ -80,6 +80,11 @@ respectively.
 Home Page
 ~~~~~~~~~
 
+.. figure:: ../../../images/screenshots/aiidalab_home.png
+    :width: 80%
+    :alt: AiiDAlab Home Page
+
+
 When the AiiDAlab application is first opened up in a browser it defaults to the AiiDAlab 
 `home page <https://aiidalab.readthedocs.io/en/latest/usage/home.html>`_ which consists 
 of some buttons to access general functionality including a terminal within the container
@@ -91,10 +96,10 @@ available workflows.
 The ChemShell plugin displays a simple start banner with several options for accessing
 different components within the plugin application. 
 
-.. figure:: ../../../images/start_banner.png 
-
+.. figure:: ../../../images/screenshots/start_banner.png 
     :width: 80%
     :alt: AiiDAlab ChemShell plugin's start banner
+
 
 The navigation buttons access the following pages:
 
