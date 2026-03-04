@@ -93,7 +93,6 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             #     0
             # ].mm_theory_dropdown.value
             self.model.qm_region = self._extract_qm_region()
-            print(self.model.qm_region)
             if self.model.use_mm:
                 if not self.model.force_field:
                     print("ERROR: No force field file found...")
@@ -151,5 +150,4 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
 
     def _update_selected_workflow(self, _) -> None:
         self.model.workflow = WorkflowOptions(self.workflow_tabs.selected_index)
-        print(self.model.workflow)
         return
