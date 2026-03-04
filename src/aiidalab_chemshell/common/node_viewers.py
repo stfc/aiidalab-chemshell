@@ -76,7 +76,10 @@ class CustomAiidaNodeViewWidget(VBox):
                     return _viewer(structure, **kwargs)
 
         if isinstance(node, ArrayData):
-            return AiidaArrayDataViewWidget(node, **kwargs)
+            if "Energy Derivative" in node.label:
+                return AiidaGradientDataViewWidget(node, **kwargs)
+            if "Vibrational" in node.label:
+                return VibrationalModesViewWidget(node, **kwargs)
         # No viewer registered for this type, return node itself
         return node
 
@@ -116,7 +119,7 @@ class CustomAiidaNodeViewWidget(VBox):
         return node
 
 
-class AiidaArrayDataViewWidget(VBox):
+class AiidaGradientDataViewWidget(VBox):
     """Custom widget to display array data produced from ChemShell jobs."""
 
     def __init__(self, array: ArrayData, **kwargs):
@@ -163,4 +166,38 @@ class AiidaArrayDataViewWidget(VBox):
         html += "</table>"
 
         self.children = [self.array_selector, HTML(html)]
+        return
+
+
+class VibrationalModesViewWidget(VBox):
+    """Custom widget to display vibrational modes produced from ChemShell."""
+
+    def __init__(self, array: ArrayData, **kwargs):
+        """VibrationalModesViewWidget Constructor.
+
+        Parameters
+        ----------
+        array : ArrayData
+            The AiiDA ArrayData object to display.
+        """
+        super().__init__(**kwargs)
+        self.array = array
+        values = self.array.get_array("Modes")
+        # Construct HTML Table
+        html = "<table style='width:100%; border: 1px solid #ddd; text-align: left; "
+        html += "border-collapse: collapse;'>"
+        html += "<tr style='background-color: #2196F3; color: white;'>"
+        html += "<th>Mode</th><th>Frequency</th><th>Vib T / K</th><th>ZPE / H</th>"
+        html += "</th><th>Energy / H</th></th><th>-TS / H</th></tr>"
+
+        for idx, row in enumerate(values):
+            bg_color = "#f9f9f9" if idx % 2 == 0 else "#ffffff"
+            html += f"<tr style='background-color: {bg_color};'>"
+            html += f"<td><b>{idx}</b></td><td>{row[0]:.6f}</td><td>{row[1]:.6f}</td>"
+            html += f"<td>{row[2]:.6f}</td><td>{row[3]:.6f}</td><td>{row[4]:.6f}</td>"
+            html += "</tr>"
+        html += "</table>"
+
+        self.children = [HTML(html)]
+
         return
