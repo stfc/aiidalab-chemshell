@@ -36,18 +36,21 @@ class ChemShellOptionsWidget(ipw.VBox):
             """
             <p>
                 Perform a geometry optimisation on the given structure via either QM or
-                QM/MM.
+                QM/MM. Uses NWChem for the QM region and DL_POLY for the (optional) MM
+                region. The quality of the calculation can be controlled via the basis
+                set option, higher quality basis set will result in a more accurate QM
+                calculation but will increase the time required.
             </p>
             """
         )
 
         # QM Backend
-        self.qm_theory_dropdown = ipw.Dropdown(
-            options=self._get_qm_theory_options(),
-            description="QM Theory:",
-            disabled=False,
-            layout={"width": "50%"},
-        )
+        # self.qm_theory_dropdown = ipw.Dropdown(
+        #     options=self._get_qm_theory_options(),
+        #     description="QM Theory:",
+        #     disabled=False,
+        #     layout={"width": "50%"},
+        # )
 
         # Basis Quality
         self.qm_basis_dropdown = ipw.Dropdown(
@@ -58,9 +61,15 @@ class ChemShellOptionsWidget(ipw.VBox):
         )
         link((self.model, "basis_quality"), (self.qm_basis_dropdown, "value"))
 
+        # Enable vibrational analysis
+        self.enable_vib = ipw.Checkbox(
+            value=True, description="Calculate Vibrational Frequencies", index=True
+        )
+        ipw.dlink((self.enable_vib, "value"), (self.model, "vibrational_analysis"))
+
         # DFT checkbox
-        self.enable_dft = ipw.Checkbox(value=False, description="Use DFT", index=True)
-        ipw.dlink((self.enable_dft, "value"), (self.model, "use_dft"))
+        # self.enable_dft = ipw.Checkbox(value=False, description="Use DFT", index=True)
+        # ipw.dlink((self.enable_dft, "value"), (self.model, "use_dft"))
 
         # QM/MM Checkbox
         self.enable_mm_chk = ipw.Checkbox(
@@ -70,12 +79,12 @@ class ChemShellOptionsWidget(ipw.VBox):
         ipw.dlink((self.enable_mm_chk, "value"), (self.model, "use_mm"))
 
         # MM Backend
-        self.mm_theory_dropdown = ipw.Dropdown(
-            options=self._get_mm_theory_options(),
-            description="MM Theory:",
-            disabled=True,
-            layout={"width": "50%"},
-        )
+        # self.mm_theory_dropdown = ipw.Dropdown(
+        #     options=self._get_mm_theory_options(),
+        #     description="MM Theory:",
+        #     disabled=True,
+        #     layout={"width": "50%"},
+        # )
 
         # QM region for QM/MM calculation
         self.qm_region_text = ipw.Text(
@@ -92,11 +101,12 @@ class ChemShellOptionsWidget(ipw.VBox):
         self.children = [
             self.header,
             self.guide,
-            self.qm_theory_dropdown,
+            # self.qm_theory_dropdown,
             self.qm_basis_dropdown,
-            self.enable_dft,
+            self.enable_vib,
+            # self.enable_dft,
             self.enable_mm_chk,
-            self.mm_theory_dropdown,
+            # self.mm_theory_dropdown,
             self.qm_region_text,
             self.ff_file,
         ]
@@ -128,7 +138,7 @@ class ChemShellOptionsWidget(ipw.VBox):
             raise e
 
     def _enable_mm_options(self, _) -> None:
-        self.mm_theory_dropdown.disabled = not self.enable_mm_chk.value
+        # self.mm_theory_dropdown.disabled = not self.enable_mm_chk.value
         self.qm_region_text.disabled = not self.enable_mm_chk.value
         self.ff_file.disable(not self.enable_mm_chk.value)
         return

@@ -27,5 +27,6 @@ class ChemShellWorkflowModel(HasTraits):
     force_field = Instance(SinglefileData, allow_none=True)
     submitted = Bool(False).tag(sync=True)
     use_mm = Bool(False).tag(sync=True)
+    vibrational_analysis = Bool(False).tag(sync=True)
 
     default_guide = ""

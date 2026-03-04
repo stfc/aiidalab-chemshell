@@ -86,12 +86,12 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
     def _submit(self, _):
         """Store the ChemShell parameters in the ChemShell workflow model."""
         if self.workflow_tabs.selected_index == 0:
-            self.model.qm_theory = self.workflow_tabs.children[
-                0
-            ].qm_theory_dropdown.value
-            self.model.mm_theory = self.workflow_tabs.children[
-                0
-            ].mm_theory_dropdown.value
+            # self.model.qm_theory = self.workflow_tabs.children[
+            #     0
+            # ].qm_theory_dropdown.value
+            # self.model.mm_theory = self.workflow_tabs.children[
+            #     0
+            # ].mm_theory_dropdown.value
             try:
                 self.model.qm_region = [
                     int(x)
