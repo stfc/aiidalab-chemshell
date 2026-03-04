@@ -1,16 +1,13 @@
 """Defines the model and view components for the structure setup stage."""
 
-from pathlib import Path
-from tempfile import NamedTemporaryFile
-
 import ase
 import ipywidgets as ipw
 from aiida.orm import SinglefileData, StructureData
 from aiidalab_widgets_base import SmilesWidget, WizardAppWidgetStep
-from weas_widget import WeasWidget
 
 from aiidalab_chemshell.common.database import AiiDADatabaseWidget
 from aiidalab_chemshell.common.file_handling import FileUploadWidget
+from aiidalab_chemshell.common.structure_viewer import StructureViewWidget
 from aiidalab_chemshell.models.structure import StructureInputModel
 
 
@@ -108,10 +105,11 @@ class StructureWizardStep(ipw.VBox, WizardAppWidgetStep):
     def _on_file_upload(self, change: dict) -> None:
         """When file upload button is pressed."""
         if self.model.has_file:
-            structure = self._get_ase_object_from_file(
+            self.viewer = StructureViewWidget()
+            self.viewer.assign_structure_from_file(
                 self.model.structure_file.filename, self.model.structure_file.content
             )
-            self._create_viewer(structure)
+            self._update_children()
         return
 
     def _on_smiles_generation(self, change: dict) -> None:
@@ -135,25 +133,16 @@ class StructureWizardStep(ipw.VBox, WizardAppWidgetStep):
             self._create_viewer(None)
         return
 
-    def _get_ase_object_from_file(self, fname: str, content: bytes) -> ase.Atoms | None:
-        suffix = "".join(Path(fname).suffixes)
-        with NamedTemporaryFile(suffix=suffix) as tmpf:
-            tmpf.write(content)
-            tmpf.flush()
-            try:
-                structure = ase.io.read(tmpf.name, index=":")[0]
-            except (KeyError, ase.io.formats.UnknownFileTypeError):
-                structure = None
-        return structure
-
     def _create_viewer(self, structure: ase.Atoms | None) -> None:
         """Create a viewer widget with the loaded ase.Atoms structure object."""
-        if structure:
-            # self.viewer = awb.viewers.StructureDataViewer(structure=structure)
-            self.viewer = WeasWidget()
-            self.viewer.from_ase(structure)
-        else:
-            self.viewer = ipw.HTML("<p>Could not visualise structure ...</p>")
+        # if structure:
+        #     # self.viewer = awb.viewers.StructureDataViewer(structure=structure)
+        #     self.viewer = WeasWidget()
+        #     self.viewer.from_ase(structure)
+        # else:
+        #     self.viewer = ipw.HTML("<p>Could not visualise structure ...</p>")
+        self.viewer = StructureViewWidget()
+        self.viewer.assign_structure_from_ase(structure)
         self._update_children()
         return
 

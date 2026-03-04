@@ -1,15 +1,13 @@
 """Defines a custom AiiDA node visualiser."""
 
-from pathlib import Path
-from tempfile import NamedTemporaryFile
-
-import ase
 from aiida.orm import ArrayData, Float, Node, ProcessNode, SinglefileData, StructureData
 from aiidalab_widgets_base.loaders import LoadingWidget
 from aiidalab_widgets_base.viewers import AIIDA_VIEWER_MAPPING
 from IPython.display import clear_output, display
 from ipywidgets import HTML, DOMWidget, Dropdown, Output, VBox
 from traitlets import Instance, observe
+
+from aiidalab_chemshell.common.structure_viewer import StructureViewWidget
 
 
 class CustomAiidaNodeViewWidget(VBox):
@@ -60,20 +58,19 @@ class CustomAiidaNodeViewWidget(VBox):
             # Allow to register specific viewers based on node.process_type
             _viewer = AIIDA_VIEWER_MAPPING.get(node.process_type, _viewer)
 
-        if _viewer:
-            return _viewer(node, **kwargs)
-
         # Handle custom ChemShell specific visualisation
         if isinstance(node, SinglefileData):
             # Singlefile data output generally refers to a structure file
             # output from ChemShell jobs
-            structure = self._get_structure_data_object_from_file(
-                node.filename, node.content
-            )
-            if structure:
-                _viewer = AIIDA_VIEWER_MAPPING.get(structure.node_type)
-                if _viewer:
-                    return _viewer(structure, **kwargs)
+            if "Structure" in node.label:
+                _viewer = StructureViewWidget(**kwargs)
+                _viewer.assign_structure_from_file(node.filename, node.content)
+                return _viewer
+
+        if isinstance(node, StructureData):
+            _viewer = StructureData(**kwargs)
+            _viewer.assign_structure_from_ase(node.get_ase())
+            return _viewer
 
         if isinstance(node, ArrayData):
             if "Energy Derivative" in node.label:
@@ -85,42 +82,9 @@ class CustomAiidaNodeViewWidget(VBox):
             if "SCF Energy" in node.label:
                 return f"Final SCF Energy (Hartree): {node.value}"
 
+        if _viewer:
+            return _viewer(node, **kwargs)
         # No viewer registered for this type, return node itself
-        return node
-
-    def _get_structure_data_object_from_file(
-        self, fname: str, content: bytes
-    ) -> StructureData | None:
-        """
-        Create an ase strucure object from a structure file.
-
-        Parameters
-        ----------
-        fname   : str
-            The file name the structure is being read from.
-        content : bytes
-            The content of the structure file byte encoded.
-
-        Return
-        ------
-        structure : ase.Atoms | None
-            The ASE atomic structure object or None if the file could not be read.
-        """
-        suffix = "".join(Path(fname).suffixes)
-        with NamedTemporaryFile(suffix=suffix) as tmpf:
-            tmpf.write(content)
-            tmpf.flush()
-            try:
-                structure = ase.io.read(tmpf.name, index=":")[0]
-            except (KeyError, ase.io.formats.UnknownFileTypeError):
-                node = None
-            else:
-                # ASE doesn't correctly interpret atomic units so convert all units to
-                # angstrom
-                for i in range(len(structure)):
-                    structure.positions[i] = structure.positions[i] * 0.529177
-                node = StructureData()
-                node.set_ase(structure)
         return node
 
 
