@@ -90,7 +90,7 @@ class ChemShellProcess:
                 print("No force field provided.")
                 return False
             if not model.workflow_model.qm_region:
-                print("No qm_ region specified")
+                print("No qm_ region specified", model.workflow_model.qm_region)
                 return False
         # Add more validation checks as needed
         return True
@@ -154,6 +154,13 @@ class ChemShellProcess:
 
         builder.basis_quality = self.model.workflow_model.basis_quality.name
         if self.model.workflow_model.use_mm:
+            builder.chemsh.qm_parameters = Dict(
+                {
+                    "theory": self.model.workflow_model.qm_theory,
+                    "method": "dft",
+                    "functional": "B3LYP",
+                }
+            )
             builder.chemsh.mm_parameters = Dict(
                 {
                     "theory": self.model.workflow_model.mm_theory,
