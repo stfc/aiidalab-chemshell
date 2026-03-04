@@ -86,24 +86,14 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
     def _submit(self, _):
         """Store the ChemShell parameters in the ChemShell workflow model."""
         if self.workflow_tabs.selected_index == 0:
-            self.model.qm_theory = self.workflow_tabs.children[
-                0
-            ].qm_theory_dropdown.value
-            self.model.mm_theory = self.workflow_tabs.children[
-                0
-            ].mm_theory_dropdown.value
-            try:
-                self.model.qm_region = [
-                    int(x)
-                    for x in self.workflow_tabs.children[0].qm_region_text.value.split(
-                        ","
-                    )
-                ]
-            except ValueError:
-                self.model.qm_region.clear()
-                self.workflow_tabs.children[0].qm_region_text.value = ""
-            except Exception as e:
-                raise e
+            # self.model.qm_theory = self.workflow_tabs.children[
+            #     0
+            # ].qm_theory_dropdown.value
+            # self.model.mm_theory = self.workflow_tabs.children[
+            #     0
+            # ].mm_theory_dropdown.value
+            self.model.qm_region = self._extract_qm_region()
+            print(self.model.qm_region)
             if self.model.use_mm:
                 if not self.model.force_field:
                     print("ERROR: No force field file found...")
@@ -112,6 +102,45 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             self.submit_btn.disabled = True
             self.workflow_tabs.children[0].disable(True)
         return
+
+    def _extract_qm_region(self) -> list[int]:
+        input = [
+            val.strip(",")
+            for val in self.workflow_tabs.children[0].qm_region_text.value.split()
+        ]
+        qm_region = []
+        invalid_input = False
+        for entry in input:
+            if "," in entry:
+                entries = entry.split(",")
+                for sub_entry in entries:
+                    if "-" in sub_entry:
+                        qm_region += self._expand_range_entry(sub_entry, invalid_input)
+            if "-" in entry:
+                qm_region += self._expand_range_entry(entry, invalid_input)
+            else:
+                try:
+                    val = int(entry)
+                except ValueError:
+                    invalid_input = True
+                except Exception as e:
+                    raise e
+                else:
+                    qm_region.append(val)
+        if invalid_input:
+            self.workflow_tabs.children[0].qm_region_text.value = ", ".join(qm_region)
+        return qm_region
+
+    @classmethod
+    def _expand_range_entry(cls, input: str, invalid_input: bool) -> list[int]:
+        start, end = input.split("-")
+        try:
+            return list(range(int(start), int(end) + 1))
+        except ValueError:
+            invalid_input = True  # noqa: F841
+            return []
+        except Exception as e:
+            raise e
 
     def _generate_workflow_widgets(self, workflow: WorkflowOptions) -> ipw.VBox:
         match workflow:

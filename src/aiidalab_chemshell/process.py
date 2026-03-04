@@ -3,12 +3,15 @@
 import traitlets as tl
 from aiida.engine import submit
 from aiida.orm import Dict, load_code
+from aiida.plugins import WorkflowFactory
 from ipywidgets import dlink
 
 from aiidalab_chemshell.models.structure import StructureInputModel
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 from aiidalab_chemshell.wizards.resources import ComputationalResourcesModel
 from aiidalab_chemshell.wizards.results import ResultsModel
+
+GeometryOptimisationWorkflow = WorkflowFactory("chemshell.opt")
 
 
 class MainAppModel(tl.HasTraits):
@@ -87,7 +90,7 @@ class ChemShellProcess:
                 print("No force field provided.")
                 return False
             if not model.workflow_model.qm_region:
-                print("No qm_ region specified")
+                print("No qm_ region specified", model.workflow_model.qm_region)
                 return False
         # Add more validation checks as needed
         return True
@@ -97,7 +100,7 @@ class ChemShellProcess:
         self._submit_optimisation_workflow()
         return
 
-    def _submit_optimisation_workflow(self) -> None:
+    def _submit_core_calcjob(self) -> None:
         builder = load_code(self.model.resource_model.code_label).get_builder()
         if self.model.structure_model.has_file:
             builder.structure = self.model.structure_model.structure_file
@@ -130,6 +133,48 @@ class ChemShellProcess:
         else:
             builder.metadata.options.withmpi = False
         builder.metadata.options.resources = {
+            "num_mpiprocs_per_machine": self.model.resource_model.ncpus,
+            "num_cores_per_machine": self.model.resource_model.ncpus,
+            "num_machines": 1,
+            "tot_num_mpiprocs": self.model.resource_model.ncpus,
+        }
+        self.node = submit(builder)
+        self.node.label = self.model.resource_model.process_label
+        self.node.description = self.model.resource_model.process_description
+        return
+
+    def _submit_optimisation_workflow(self) -> None:
+        """Create and submit the AiiDA Workflow for a geometry optimisation."""
+        builder = WorkflowFactory("chemshell.opt").get_builder()
+        builder.chemsh.code = load_code(self.model.resource_model.code_label)
+        if self.model.structure_model.has_file:
+            builder.chemsh.structure = self.model.structure_model.structure_file
+        else:
+            builder.chemsh.structure = self.model.structure_model.structure
+
+        builder.basis_quality = self.model.workflow_model.basis_quality.name
+        if self.model.workflow_model.use_mm:
+            builder.chemsh.qm_parameters = Dict(
+                {
+                    "theory": self.model.workflow_model.qm_theory,
+                    "method": "dft",
+                    "functional": "B3LYP",
+                }
+            )
+            builder.chemsh.mm_parameters = Dict(
+                {
+                    "theory": self.model.workflow_model.mm_theory,
+                }
+            )
+            builder.chemsh.force_field_file = self.model.workflow_model.force_field
+            builder.chemsh.qmmm_parameters = Dict(
+                {
+                    "qm_region": self.model.workflow_model.qm_region,
+                }
+            )
+        builder.chemsh.calculation_parameters = Dict({"gradients": True})
+        builder.vibrational_analysis = self.model.workflow_model.vibrational_analysis
+        builder.chemsh.metadata.options.resources = {
             "num_mpiprocs_per_machine": self.model.resource_model.ncpus,
             "num_cores_per_machine": self.model.resource_model.ncpus,
             "num_machines": 1,
