@@ -11,4 +11,4 @@ identifiers:
     value: tbc 
 repository-code: "https://github.com/stfc/alc-ux"
 abstract: "AiiDAlab workflow UI for ALC scientific research"
-license: BSD 3-Clause
+license: BSD-3-Clause
