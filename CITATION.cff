@@ -8,7 +8,7 @@ authors:
     orcid: "https://orcid.org/0000-0002-5690-9470"
 identifiers:
   - type: doi 
-    value: tbc 
+    value: 10.5281/zenodo.19188756
 repository-code: "https://github.com/stfc/alc-ux"
 abstract: "AiiDAlab workflow UI for ALC scientific research"
 license: BSD-3-Clause

@@ -7,7 +7,7 @@
 [![Docs status](https://github.com/stfc/aiidalab-chemshell/actions/workflows/ci-docs.yml/badge.svg?branch=main)](https://stfc.github.io/aiidalab-chemshell/)
 <!-- [![Coverage Status]( https://coveralls.io/repos/github/stfc/aiidalab-chemshell/badge.svg?branch=main)](https://coveralls.io/github/stfc/aiidalab-chemshell?branch=main) -->
 
-[![DOI](badge)](https://zenodo.org/)
+[![DOI](https://zenodo.org/badge/1094975386.svg)](https://doi.org/10.5281/zenodo.19188755)
 
 This is an AiiDAlab application plugin for ChemShell based scientific workflows, maintained by the [Ada Lovelace Center](https://adalovelacecentre.ac.uk/) (ALC).
 The app is still in early development stage and any input/contributions are welcome.
