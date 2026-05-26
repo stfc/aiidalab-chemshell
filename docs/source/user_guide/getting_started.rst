@@ -37,6 +37,16 @@ are discussed in the
 In general the core docker image applicable to most use cases is ``aiidalab/full-stack:latest``
 however, many other options exist for more tailored startup environments.
 
+AiiDAlab provides a python module which encapsulates the creation and management of the required
+containerised environments for running AiiDAlab instances and controlling the AiiDA database 
+configuration. This can be installed through ``pip`` as,
+
+.. code:: bash 
+
+    pip install aiidalab-launch
+
+with further details given in the `documentation <https://aiidalab.readthedocs.io/en/latest/usage/access/launch.html>`_\.
+
 AiiDAlab ChemShell Containers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
