@@ -134,3 +134,22 @@ Available Workflow Configurations
 
 Geometry Optimisation
 ~~~~~~~~~~~~~~~~~~~~~
+
+This is the default base workflow provided with the AiiDAlab ChemShell plugin, it represents a geometry
+optimisation calculation with optional additional steps such as the evaluation of vibrational frequencies
+of the optimised structure. It can be configured for both QM, MM or QM/MM based methods with sensibly chosen
+default parameters. The quality of the DFT portion of the calculation can be tuned with the *Basis Quality* 
+option, however this creates a trade-off with the time required for the calculations. 
+
+The *MM* components of the workflow can be enabled by checking the *Use QM/MM* box which will enable the 
+remaining input fields. When using *MM* within a calculation the user must provide a pre-configured force
+field in the required **DL_POLY** format, which needs to be provided in the *Force Field:* input section. 
+Additionally, the user needs to specify which atoms to apply the *QM* theory portion of a *QM/MM* calculation
+method to, which can be provided as a comma separated list in the *QM Region:* input section. 
+
+
+
+.. note:: 
+
+    More workflows are always being developed and added. If there are any that you would like to see within
+    this plugin get in touch via the GitHub discussions page. 
