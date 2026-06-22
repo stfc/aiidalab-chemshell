@@ -52,6 +52,8 @@ class ChemShellOptionsWidget(ipw.VBox):
         self.ff_file.disable(True)
 
         self.h_line = ipw.HTML("<hr>")
+        self.qmmm_widget = ipw.VBox(**kwargs)
+        self.mlip_widget = ipw.VBox(**kwargs)
 
         return
 
@@ -77,15 +79,18 @@ class ChemShellOptionsWidget(ipw.VBox):
         except Exception as e:
             raise e
 
-    def _enable_mm_options(self, _) -> None:
+    def _enable_mm_options(self, change: dict) -> None:
         # self.mm_theory_dropdown.disabled = not self.enable_mm_chk.value
-        self.qm_region_text.disabled = not self.enable_mm_chk.value
-        self.ff_file.disable(not self.enable_mm_chk.value)
+        if change["new"]:
+            self.qmmm_widget.children = [
+                self.h_line,
+                self.enable_mm_chk,
+                self.qm_region_text,
+                self.ff_file,
+            ]
+        else:
+            self.qmmm_widget.children = [self.h_line, self.enable_mm_chk]
         return
-
-    # def _update_basis_quality(self, _) -> None:
-    #     print(self.model.basis_quality)
-    #     return
 
     def render(self):
         """Render the options widget contents if not already rendered."""
@@ -111,6 +116,33 @@ class ChemShellOptionsWidget(ipw.VBox):
         # self.enable_dft = ipw.Checkbox(value=False, description="Use DFT", index=True)
         # ipw.dlink((self.enable_dft, "value"), (self.model, "use_dft"))
 
+        children = [
+            self.header,
+            self.guide,
+            self.qm_basis_dropdown,
+            self.enable_vib,
+            self.qmmm_widget,
+        ]
+
+        self.create_qmmm_widget()
+
+        if find_spec("aiida_mlip"):
+            self.create_mlip_fine_tuning_options()
+            children.append(self.mlip_widget)
+
+        self.children = children
+        self.rendered = True
+        return
+
+    def disable(self, val: bool) -> None:
+        """Disable the input fields."""
+        for child in self.children:
+            child.disabled = val
+        self.ff_file.disable(val)
+        return
+
+    def create_qmmm_widget(self) -> None:
+        """Create optional inputs for enabling QM/MM."""
         # QM/MM Checkbox
         self.enable_mm_chk = ipw.Checkbox(
             value=False, description="Use QM/MM", indent=True
@@ -133,40 +165,16 @@ class ChemShellOptionsWidget(ipw.VBox):
             disabled=True,
             layout={"width": "50%"},
         )
-
-        children = [
-            self.header,
-            self.guide,
-            self.qm_basis_dropdown,
-            self.enable_vib,
-            self.h_line,
-            self.enable_mm_chk,
-            self.qm_region_text,
-            self.ff_file,
-        ]
-
-        if find_spec("aiida_mlip"):
-            self.create_mlip_fine_tuning_options(children)
-
-        self.children = children
-        self.rendered = True
+        self._enable_mm_options({"new": self.enable_mm_chk.value})
         return
 
-    def disable(self, val: bool) -> None:
-        """Disable the input fields."""
-        for child in self.children:
-            child.disabled = val
-        self.ff_file.disable(val)
-        return
-
-    def create_mlip_fine_tuning_options(self, children: list) -> None:
+    def create_mlip_fine_tuning_options(self) -> None:
         """Create optional inputs for enabling MLIP fine-tuning."""
         self.use_mlip_ft = ipw.Checkbox(
             value=False, description="Fine-Tune MLIP Model", index=True
         )
         ipw.dlink((self.use_mlip_ft, "value"), (self.model, "fine_tune_mlip"))
-        # self.mlip_model = FileUploadWidget(description="MLIP Model:")
-        # self.mlip_model.observe(self._get_model_data_from_singlefile_data, "file")
+        self.use_mlip_ft.observe(self._show_mlip_options, "value")
 
         from aiida_mlip.data.model import ModelData
 
@@ -204,10 +212,20 @@ class ChemShellOptionsWidget(ipw.VBox):
         )
         ipw.dlink((self.mlip_code, "value"), (self.model, "mlip_code"))
 
-        children.append(self.h_line)
-        children.append(self.use_mlip_ft)
-        children.append(self.mlip_model)
-        children.append(self.mlip_code)
+        self.mlip_widget.children = [self.h_line, self.use_mlip_ft]
+        return
+
+    def _show_mlip_options(self, change: dict) -> None:
+        """Show/Hide the additional input options for MLIP fine-tuning."""
+        if change["new"]:
+            self.mlip_widget.children = [
+                self.h_line,
+                self.use_mlip_ft,
+                self.mlip_model,
+                self.mlip_code,
+            ]
+        else:
+            self.mlip_widget.children = [self.h_line, self.use_mlip_ft]
         return
 
     def _on_mlip_model_change(self, change: dict) -> None:
