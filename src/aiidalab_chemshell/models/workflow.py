@@ -29,4 +29,13 @@ class ChemShellWorkflowModel(HasTraits):
     use_mm = Bool(False).tag(sync=True)
     vibrational_analysis = Bool(False).tag(sync=True)
 
+    fine_tune_mlip = Bool(False).tag(sync=True)
+    mlip_code = Unicode("", allow_none=False)
+    try:
+        from aiida_mlip.data.model import ModelData
+    except ModuleNotFoundError:
+        pass
+    else:
+        mlip_model = Instance(ModelData, allow_none=True)
+
     default_guide = ""

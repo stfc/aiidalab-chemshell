@@ -145,22 +145,26 @@ class ChemShellProcess:
 
     def _submit_optimisation_workflow(self) -> None:
         """Create and submit the AiiDA Workflow for a geometry optimisation."""
+        # Create code for optimisation workflow
         builder = WorkflowFactory("chemshell.opt").get_builder()
         builder.chemsh.code = load_code(self.model.resource_model.code_label)
+
+        # Set input structure
         if self.model.structure_model.has_file:
             builder.chemsh.structure = self.model.structure_model.structure_file
         else:
             builder.chemsh.structure = self.model.structure_model.structure
 
+        # Configure workflow parameters
         builder.basis_quality = self.model.workflow_model.basis_quality.name
+        builder.chemsh.qm_parameters = Dict(
+            {
+                "theory": self.model.workflow_model.qm_theory,
+                "method": "dft",
+                "functional": "B3LYP",
+            }
+        )
         if self.model.workflow_model.use_mm:
-            builder.chemsh.qm_parameters = Dict(
-                {
-                    "theory": self.model.workflow_model.qm_theory,
-                    "method": "dft",
-                    "functional": "B3LYP",
-                }
-            )
             builder.chemsh.mm_parameters = Dict(
                 {
                     "theory": self.model.workflow_model.mm_theory,
@@ -174,6 +178,16 @@ class ChemShellProcess:
             )
         builder.chemsh.calculation_parameters = Dict({"gradients": True})
         builder.vibrational_analysis = self.model.workflow_model.vibrational_analysis
+        if self.model.workflow_model.fine_tune_mlip:
+            builder.mlip_code = load_code(self.model.workflow_model.mlip_code)
+            if self.model.workflow_model.mlip_model:
+                builder.mlip_model = self.model.workflow_model.mlip_model
+            else:
+                from aiida_mlip.helpers.help_load import load_model
+
+                builder.mlip_model = load_model(None, "mace_mp")
+
+        # Metadata options
         builder.chemsh.metadata.options.resources = {
             "num_mpiprocs_per_machine": self.model.resource_model.ncpus,
             "num_cores_per_machine": self.model.resource_model.ncpus,

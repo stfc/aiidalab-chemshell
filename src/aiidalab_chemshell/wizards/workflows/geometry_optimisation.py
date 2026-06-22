@@ -3,6 +3,7 @@
 from importlib.util import find_spec
 
 import ipywidgets as ipw
+from aiida.orm import Code, QueryBuilder
 from traitlets import link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
@@ -163,8 +164,64 @@ class ChemShellOptionsWidget(ipw.VBox):
         self.use_mlip_ft = ipw.Checkbox(
             value=False, description="Fine-Tune MLIP Model", index=True
         )
-        self.mlip_model = FileUploadWidget(description="MLIP Model:")
+        ipw.dlink((self.use_mlip_ft, "value"), (self.model, "fine_tune_mlip"))
+        # self.mlip_model = FileUploadWidget(description="MLIP Model:")
+        # self.mlip_model.observe(self._get_model_data_from_singlefile_data, "file")
+
+        from aiida_mlip.data.model import ModelData
+
+        # 2. Query the database for existing ModelData nodes
+        qb = QueryBuilder()
+        qb.append(ModelData)
+        existing_models = [node[0] for node in qb.all()]
+
+        # 3. Construct options for the dropdown
+        # Format: List of ( "Label Shown to User", database_node_or_string_action )
+        model_options = []
+
+        # Populate existing nodes
+        for node in existing_models:
+            label = f"ID: {node.id} | {node.architecture} ({node.label or 'No Label'})"
+            model_options.append((label, node))
+
+        # Add the default action option at the top
+        model_options.insert(0, ("[+] Create New Model (mace_mp)...", "CREATE_NEW"))
+
+        # 4. Create the model Widget
+        self.mlip_model = ipw.Dropdown(
+            options=model_options,
+            value="CREATE_NEW",  # Default selection
+            description="MLIP Model:",
+            # style={"description_width": "initial"},
+            layout={"width": "60%"},
+        )
+
+        self.mlip_code = ipw.Dropdown(
+            options=self._get_currently_available_codes(),
+            description="MLIP Code:",
+            # style={"description_width": "initial"},
+            layout={"width": "60%"},
+        )
+        ipw.dlink((self.mlip_code, "value"), (self.model, "mlip_code"))
+
         children.append(self.h_line)
         children.append(self.use_mlip_ft)
         children.append(self.mlip_model)
+        children.append(self.mlip_code)
         return
+
+    def _on_mlip_model_change(self, change: dict) -> None:
+        """Update the selected MLIP model."""
+        if change["new"] == change["old"]:
+            return
+        if change["new"] == "CREATE_NEW":
+            self.model.mlip_model = None
+        else:
+            self.model.mlip_model = change["new"]
+        return
+
+    def _get_currently_available_codes(self) -> list:
+        qb = QueryBuilder()
+        qb.append(Code, project=["label", "id"])
+        codes = qb.all()
+        return [f"{label}" for label, id in codes]
