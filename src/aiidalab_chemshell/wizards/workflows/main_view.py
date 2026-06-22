@@ -59,6 +59,7 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
 
         self.workflow_tabs.selected_index = self.model.workflow.value
 
+        self.workflow_tabs.children[self.workflow_tabs.selected_index].render()
         # Link necessary inputs to model
         # ipw.dlink((self.workflow_tabs, "selected_index"), (self.model, "workflow"))
         self.workflow_tabs.observe(self._update_selected_workflow, "selected_index")
@@ -149,5 +150,6 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
                 return ipw.VBox()
 
     def _update_selected_workflow(self, _) -> None:
+        self.workflow_tabs.children[self.workflow_tabs.selected_index].render()
         self.model.workflow = WorkflowOptions(self.workflow_tabs.selected_index)
         return

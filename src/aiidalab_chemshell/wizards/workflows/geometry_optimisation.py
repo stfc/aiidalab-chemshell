@@ -44,13 +44,48 @@ class ChemShellOptionsWidget(ipw.VBox):
             """
         )
 
-        # QM Backend
-        # self.qm_theory_dropdown = ipw.Dropdown(
-        #     options=self._get_qm_theory_options(),
-        #     description="QM Theory:",
-        #     disabled=False,
-        #     layout={"width": "50%"},
-        # )
+        # Force Field File
+        self.ff_file = FileUploadWidget(description="Force Field:")
+        self.ff_file.disable(True)
+
+        return
+
+    def _get_qm_theory_options(self) -> list[str]:
+        """Get the available QM theory options."""
+        try:
+            from aiida_chemshell.utils import ChemShellQMTheory
+
+            return list(ChemShellQMTheory.__members__.keys())
+        except ImportError:
+            return []
+        except Exception as e:
+            raise e
+
+    def _get_mm_theory_options(self) -> list[str]:
+        """Get the available MM theory options."""
+        try:
+            from aiida_chemshell.utils import ChemShellMMTheory
+
+            return list(ChemShellMMTheory.__members__.keys())
+        except ImportError:
+            return []
+        except Exception as e:
+            raise e
+
+    def _enable_mm_options(self, _) -> None:
+        # self.mm_theory_dropdown.disabled = not self.enable_mm_chk.value
+        self.qm_region_text.disabled = not self.enable_mm_chk.value
+        self.ff_file.disable(not self.enable_mm_chk.value)
+        return
+
+    # def _update_basis_quality(self, _) -> None:
+    #     print(self.model.basis_quality)
+    #     return
+
+    def render(self):
+        """Render the options widget contents if not already rendered."""
+        if self.rendered:
+            return
 
         # Basis Quality
         self.qm_basis_dropdown = ipw.Dropdown(
@@ -94,10 +129,6 @@ class ChemShellOptionsWidget(ipw.VBox):
             layout={"width": "50%"},
         )
 
-        # Force Field File
-        self.ff_file = FileUploadWidget(description="Force Field:")
-        self.ff_file.disable(True)
-
         self.children = [
             self.header,
             self.guide,
@@ -110,47 +141,6 @@ class ChemShellOptionsWidget(ipw.VBox):
             self.qm_region_text,
             self.ff_file,
         ]
-
-        # self.layout = Layout(margin="auto")
-
-        return
-
-    def _get_qm_theory_options(self) -> list[str]:
-        """Get the available QM theory options."""
-        try:
-            from aiida_chemshell.utils import ChemShellQMTheory
-
-            return list(ChemShellQMTheory.__members__.keys())
-        except ImportError:
-            return []
-        except Exception as e:
-            raise e
-
-    def _get_mm_theory_options(self) -> list[str]:
-        """Get the available MM theory options."""
-        try:
-            from aiida_chemshell.utils import ChemShellMMTheory
-
-            return list(ChemShellMMTheory.__members__.keys())
-        except ImportError:
-            return []
-        except Exception as e:
-            raise e
-
-    def _enable_mm_options(self, _) -> None:
-        # self.mm_theory_dropdown.disabled = not self.enable_mm_chk.value
-        self.qm_region_text.disabled = not self.enable_mm_chk.value
-        self.ff_file.disable(not self.enable_mm_chk.value)
-        return
-
-    # def _update_basis_quality(self, _) -> None:
-    #     print(self.model.basis_quality)
-    #     return
-
-    def render(self):
-        """Render the options widget contents if not already rendered."""
-        if self.rendered:
-            return
 
         self.rendered = True
         return
