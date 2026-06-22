@@ -1,5 +1,7 @@
 """Defines the input widget for the base geometry optimisation workflow."""
 
+from importlib.util import find_spec
+
 import ipywidgets as ipw
 from traitlets import link
 
@@ -47,6 +49,8 @@ class ChemShellOptionsWidget(ipw.VBox):
         # Force Field File
         self.ff_file = FileUploadWidget(description="Force Field:")
         self.ff_file.disable(True)
+
+        self.h_line = ipw.HTML("<hr>")
 
         return
 
@@ -129,19 +133,21 @@ class ChemShellOptionsWidget(ipw.VBox):
             layout={"width": "50%"},
         )
 
-        self.children = [
+        children = [
             self.header,
             self.guide,
-            # self.qm_theory_dropdown,
             self.qm_basis_dropdown,
             self.enable_vib,
-            # self.enable_dft,
+            self.h_line,
             self.enable_mm_chk,
-            # self.mm_theory_dropdown,
             self.qm_region_text,
             self.ff_file,
         ]
 
+        if find_spec("aiida_mlip"):
+            self.create_mlip_fine_tuning_options(children)
+
+        self.children = children
         self.rendered = True
         return
 
@@ -150,4 +156,15 @@ class ChemShellOptionsWidget(ipw.VBox):
         for child in self.children:
             child.disabled = val
         self.ff_file.disable(val)
+        return
+
+    def create_mlip_fine_tuning_options(self, children: list) -> None:
+        """Create optional inputs for enabling MLIP fine-tuning."""
+        self.use_mlip_ft = ipw.Checkbox(
+            value=False, description="Fine-Tune MLIP Model", index=True
+        )
+        self.mlip_model = FileUploadWidget(description="MLIP Model:")
+        children.append(self.h_line)
+        children.append(self.use_mlip_ft)
+        children.append(self.mlip_model)
         return
