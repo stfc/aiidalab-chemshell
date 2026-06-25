@@ -93,6 +93,7 @@ class ChemShellOptionsWidget(ipw.VBox):
             disabled=True,
             layout={"width": "50%"},
         )
+        link((self.qm_region_text, "value"), (self.model, "qm_region"))
 
         # Force Field File
         self.ff_file = FileUploadWidget(description="Force Field:")

@@ -5,6 +5,7 @@ from ipywidgets import HTML, Checkbox, Dropdown, HBox, Text, VBox, dlink
 from traitlets import Bool, HasTraits, link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
+from aiidalab_chemshell.common.file_handling import FileUploadWidget
 from aiidalab_chemshell.common.utils import LoadingWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
@@ -90,22 +91,52 @@ class SinglePointCalcWidget(VBox):
         )
         dlink((self.enable_vib, "value"), (self.model, "vibrational_analysis"))
 
+        self.enable_mm_chk = Checkbox(value=False, description="Use QM/MM", indent=True)
+        self.enable_mm_chk.observe(self._enable_mm_options, "value")
+        dlink((self.enable_mm_chk, "value"), (self.model, "use_mm"))
+
+        # MM Backend
+        # self.mm_theory_dropdown = ipw.Dropdown(
+        #     options=self._get_mm_theory_options(),
+        #     description="MM Theory:",
+        #     disabled=True,
+        #     layout={"width": "50%"},
+        # )
+
+        # QM region for QM/MM calculation
+        self.qm_region_text = Text(
+            value="",
+            description="QM Region:",
+            disabled=False,
+            layout={"width": "50%"},
+        )
+        link((self.qm_region_text, "value"), (self.model, "qm_region"))
+
+        # Force Field File
+        self.ff_file = FileUploadWidget(description="Force Field:")
+        link((self.ff_file, "file"), (self.model, "force_field"))
+
         self._render_basic_options()
 
     def _render_basic_options(self) -> None:
         """Render the simplified input options view."""
-        self.children = [
+        children = [
             self.header,
             self.advanced_options,
             self.basis_dropdown,
             self.enable_vib,
             self.derivatives,
+            self.enable_mm_chk,
         ]
+        if self.enable_mm_chk.value:
+            children.append(self.qm_region_text)
+            children.append(self.ff_file)
+        self.children = children
         return
 
     def _render_advanced_options(self) -> None:
         """Render the advanced input options view."""
-        self.children = [
+        children = [
             self.header,
             self.advanced_options,
             self.backend,
@@ -113,7 +144,12 @@ class SinglePointCalcWidget(VBox):
             self.functional,
             self.enable_vib,
             self.derivatives,
+            self.enable_mm_chk,
         ]
+        if self.enable_mm_chk.value:
+            children.append(self.qm_region_text)
+            children.append(self.ff_file)
+        self.children = children
         return
 
     def _render_input_options(self, change: dict) -> None:
@@ -137,6 +173,10 @@ class SinglePointCalcWidget(VBox):
         """Disable/Enable the wigets input options."""
         for child in self.children:
             child.disabled = disable
+        return
+
+    def _enable_mm_options(self, _) -> None:
+        self._render_input_options({"new": self.advanced_options.value})
         return
 
 

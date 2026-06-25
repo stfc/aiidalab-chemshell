@@ -6,7 +6,6 @@ from traitlets import (
     Bool,
     HasTraits,
     Instance,
-    List,
     Unicode,
     UseEnum,
 )
@@ -22,7 +21,7 @@ class ChemShellWorkflowModel(HasTraits):
 
     qm_theory = UseEnum(ChemShellQMTheory, ChemShellQMTheory.NWCHEM, allow_none=False)
     mm_theory = Unicode("DL_POLY", allow_none=True)
-    qm_region = List([], allow_none=True)
+    qm_region = Unicode("", allow_none=False)
     use_dft = Bool(True).tag(sync=True)
     basis_quality = UseEnum(BasisSetOptions, BasisSetOptions.FAST, allow_none=False)
     functional = Unicode("B3LYP", allow_none=False)

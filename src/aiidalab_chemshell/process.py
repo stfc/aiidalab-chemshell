@@ -132,7 +132,9 @@ class ChemShellProcess:
             builder.force_field_file = self.model.workflow_model.force_field
             builder.qmmm_parameters = Dict(
                 {
-                    "qm_region": self.model.workflow_model.qm_region,
+                    "qm_region": ChemShellProcess._extract_qm_region(
+                        self.model.workflow_model.qm_region
+                    ),
                 }
             )
         builder.calculation_parameters = Dict(
@@ -184,7 +186,9 @@ class ChemShellProcess:
             builder.chemsh.force_field_file = self.model.workflow_model.force_field
             builder.chemsh.qmmm_parameters = Dict(
                 {
-                    "qm_region": self.model.workflow_model.qm_region,
+                    "qm_region": ChemShellProcess._extract_qm_region(
+                        self.model.workflow_model.qm_region
+                    ),
                 }
             )
         # builder.chemsh.calculation_parameters = Dict({"gradients": True})
@@ -220,3 +224,40 @@ class ChemShellProcess:
         self.node.label = self.model.resource_model.process_label
         self.node.description = self.model.resource_model.process_description
         return
+
+    @classmethod
+    def _extract_qm_region(cls, input_str: str) -> list[int]:
+        input = [val.strip(",") for val in input_str.split()]
+        qm_region = []
+        invalid_input = False
+        for entry in input:
+            if "," in entry:
+                entries = entry.split(",")
+                for sub_entry in entries:
+                    if "-" in sub_entry:
+                        qm_region += ChemShellProcess._expand_range_entry(
+                            sub_entry, invalid_input
+                        )
+            if "-" in entry:
+                qm_region += ChemShellProcess._expand_range_entry(entry, invalid_input)
+            else:
+                try:
+                    val = int(entry)
+                except ValueError:
+                    invalid_input = True
+                except Exception as e:
+                    raise e
+                else:
+                    qm_region.append(val)
+        return qm_region
+
+    @classmethod
+    def _expand_range_entry(cls, input: str, invalid_input: bool) -> list[int]:
+        start, end = input.split("-")
+        try:
+            return list(range(int(start), int(end) + 1))
+        except ValueError:
+            invalid_input = True  # noqa: F841
+            return []
+        except Exception as e:
+            raise e
