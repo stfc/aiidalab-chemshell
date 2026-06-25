@@ -6,6 +6,7 @@ from aiida.orm import Dict, load_code
 from aiida.plugins import WorkflowFactory
 from ipywidgets import dlink
 
+from aiidalab_chemshell.common.chemshell import WorkflowOptions
 from aiidalab_chemshell.models.structure import StructureInputModel
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 from aiidalab_chemshell.wizards.resources import ComputationalResourcesModel
@@ -97,7 +98,15 @@ class ChemShellProcess:
 
     def submit_process(self):
         """Submit the AiiDA process."""
-        self._submit_optimisation_workflow()
+        match self.model.workflow_model.workflow:
+            case WorkflowOptions.GEOMETRY:
+                self._submit_optimisation_workflow()
+            case WorkflowOptions.ATOMIC_ENERGIES:
+                self._submit_atomic_energies_workflow()
+            case WorkflowOptions.SINGLE_POINT:
+                self._submit_core_calcjob()
+            case _:
+                print("ERROR :: Invalid Workflow Specified...")
         return
 
     def _submit_core_calcjob(self) -> None:
@@ -108,10 +117,10 @@ class ChemShellProcess:
             builder.structure = self.model.structure_model.structure
         builder.qm_parameters = Dict(
             {
-                "theory": self.model.workflow_model.qm_theory,
-                "basis": self.model.workflow_model.basis_quality.label,
+                "theory": self.model.workflow_model.qm_theory.name,
                 "method": "dft" if self.model.workflow_model.use_dft else "hf",
-                "functional": "B3LYP",
+                "functional": self.model.workflow_model.functional,
+                "basis": self.model.workflow_model.basis_set,
             }
         )
         if self.model.workflow_model.use_mm:
@@ -123,11 +132,19 @@ class ChemShellProcess:
             builder.force_field_file = self.model.workflow_model.force_field
             builder.qmmm_parameters = Dict(
                 {
-                    "qm_region": self.model.workflow_model.qm_region,
+                    "qm_region": ChemShellProcess._extract_qm_region(
+                        self.model.workflow_model.qm_region
+                    ),
                 }
             )
-        builder.calculation_parameters = Dict({"gradients": True})
-        builder.optimisation_parameters = Dict({})
+        builder.calculation_parameters = Dict(
+            {
+                "gradients": self.model.workflow_model.gradients,
+                "hessian": self.model.workflow_model.hessian,
+            }
+        )
+        if self.model.workflow_model.vibrational_analysis:
+            builder.optimisation_parameters = Dict({"thermal": True})
         if self.model.resource_model.ncpus > 1:
             builder.metadata.options.withmpi = True
         else:
@@ -145,20 +162,20 @@ class ChemShellProcess:
 
     def _submit_optimisation_workflow(self) -> None:
         """Create and submit the AiiDA Workflow for a geometry optimisation."""
-        builder = WorkflowFactory("chemshell.opt").get_builder()
+        builder = WorkflowFactory("chemshell.opt").get_builder()  # pyright: ignore[reportFunctionMemberAccess]
         builder.chemsh.code = load_code(self.model.resource_model.code_label)
         if self.model.structure_model.has_file:
             builder.chemsh.structure = self.model.structure_model.structure_file
         else:
             builder.chemsh.structure = self.model.structure_model.structure
 
-        builder.basis_quality = self.model.workflow_model.basis_quality.name
         if self.model.workflow_model.use_mm:
             builder.chemsh.qm_parameters = Dict(
                 {
                     "theory": self.model.workflow_model.qm_theory,
                     "method": "dft",
-                    "functional": "B3LYP",
+                    "functional": self.model.workflow_model.functional,
+                    "basis": self.model.workflow_model.basis_set,
                 }
             )
             builder.chemsh.mm_parameters = Dict(
@@ -169,10 +186,12 @@ class ChemShellProcess:
             builder.chemsh.force_field_file = self.model.workflow_model.force_field
             builder.chemsh.qmmm_parameters = Dict(
                 {
-                    "qm_region": self.model.workflow_model.qm_region,
+                    "qm_region": ChemShellProcess._extract_qm_region(
+                        self.model.workflow_model.qm_region
+                    ),
                 }
             )
-        builder.chemsh.calculation_parameters = Dict({"gradients": True})
+        # builder.chemsh.calculation_parameters = Dict({"gradients": True})
         builder.vibrational_analysis = self.model.workflow_model.vibrational_analysis
         builder.chemsh.metadata.options.resources = {
             "num_mpiprocs_per_machine": self.model.resource_model.ncpus,
@@ -184,3 +203,61 @@ class ChemShellProcess:
         self.node.label = self.model.resource_model.process_label
         self.node.description = self.model.resource_model.process_description
         return
+
+    def _submit_atomic_energies_workflow(self) -> None:
+        """Submit the IsolatedAtomEnergy WorkChain."""
+        builder = WorkflowFactory("chemshell.atomic_energies").get_builder()  # pyright: ignore[reportFunctionMemberAccess]
+        builder.code = load_code(self.model.resource_model.code_label)
+        if self.model.structure_model.has_file:
+            builder.structure = self.model.structure_model.structure_file
+        else:
+            builder.structure = self.model.structure_model.structure
+        builder.qm_parameters = Dict(
+            {
+                "theory": self.model.workflow_model.qm_theory.name,
+                "method": "dft",
+                "functional": self.model.workflow_model.functional,
+                "basis": self.model.workflow_model.basis_set,
+            }
+        )
+        self.node = submit(builder)
+        self.node.label = self.model.resource_model.process_label
+        self.node.description = self.model.resource_model.process_description
+        return
+
+    @classmethod
+    def _extract_qm_region(cls, input_str: str) -> list[int]:
+        input = [val.strip(",") for val in input_str.split()]
+        qm_region = []
+        invalid_input = False
+        for entry in input:
+            if "," in entry:
+                entries = entry.split(",")
+                for sub_entry in entries:
+                    if "-" in sub_entry:
+                        qm_region += ChemShellProcess._expand_range_entry(
+                            sub_entry, invalid_input
+                        )
+            if "-" in entry:
+                qm_region += ChemShellProcess._expand_range_entry(entry, invalid_input)
+            else:
+                try:
+                    val = int(entry)
+                except ValueError:
+                    invalid_input = True
+                except Exception as e:
+                    raise e
+                else:
+                    qm_region.append(val)
+        return qm_region
+
+    @classmethod
+    def _expand_range_entry(cls, input: str, invalid_input: bool) -> list[int]:
+        start, end = input.split("-")
+        try:
+            return list(range(int(start), int(end) + 1))
+        except ValueError:
+            invalid_input = True  # noqa: F841
+            return []
+        except Exception as e:
+            raise e

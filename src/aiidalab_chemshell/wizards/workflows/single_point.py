@@ -1,8 +1,8 @@
-"""Defines the input widget for the base geometry optimisation workflow."""
+"""Defines the input widget for the a base single point energy calculation."""
 
-import ipywidgets as ipw
 from aiida_chemshell.utils import ChemShellQMTheory
-from traitlets import link
+from ipywidgets import HTML, Checkbox, Dropdown, HBox, Text, VBox, dlink
+from traitlets import Bool, HasTraits, link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
 from aiidalab_chemshell.common.file_handling import FileUploadWidget
@@ -10,12 +10,12 @@ from aiidalab_chemshell.common.utils import LoadingWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
 
-class ChemShellOptionsWidget(ipw.VBox):
-    """Widget for selecting the ChemShell input options."""
+class SinglePointCalcWidget(VBox):
+    """Widget for specifying ChemShell SP calculation inputs."""
 
     def __init__(self, model: ChemShellWorkflowModel, **kwargs):
         """
-        ChemShellOptionsWidget constructor.
+        SinglePointCalcWidget constructor.
 
         Parameters
         ----------
@@ -27,80 +27,32 @@ class ChemShellOptionsWidget(ipw.VBox):
         super().__init__(**kwargs)
         self.model = model
         self.rendered = False
-
-        self.header = ipw.HTML(
+        self.header = HTML(
             """
-            <h3 style="text-align: center;"> QM/MM Geometry Optimisation </h3>
+            <h3 style="text-align: center;">Single Point Energy Calculation</h3>
             <p>
-                Perform a geometry optimisation on the given structure via either QM or
-                QM/MM. Uses NWChem for the QM region and DL_POLY for the (optional) MM
-                region. The quality of the calculation can be controlled via the basis
-                set option, higher quality basis set will result in a more accurate QM
-                calculation but will increase the time required.
+                Perform a single point calculation on a given input structure.
+                Optionally a vibrational frequency calculation can be performed
+                instead, again based on the given input structure.
             </p>
             """,
-            layout={"margin": "auto"},
+            # layout={"margin": "auto"},
         )
-
-        # Force Field File
-        self.ff_file = FileUploadWidget(description="Force Field:")
-        self.ff_file.disable(True)
-
         self.children = [self.header, LoadingWidget()]
-
         return
 
-    def _get_qm_theory_options(self) -> list[str]:
-        """Get the available QM theory options."""
-        try:
-            from aiida_chemshell.utils import ChemShellQMTheory
-
-            return list(ChemShellQMTheory.__members__.keys())
-        except ImportError:
-            return []
-        except Exception as e:
-            raise e
-
-    def _get_mm_theory_options(self) -> list[str]:
-        """Get the available MM theory options."""
-        try:
-            from aiida_chemshell.utils import ChemShellMMTheory
-
-            return list(ChemShellMMTheory.__members__.keys())
-        except ImportError:
-            return []
-        except Exception as e:
-            raise e
-
-    def _enable_mm_options(self, _) -> None:
-        self._render_input_options({"new": self.advanced_options.value})
-        return
-
-    # def _update_basis_quality(self, _) -> None:
-    #     print(self.model.basis_quality)
-    #     return
-
-    def render(self):
-        """Render the options widget contents if not already rendered."""
+    def render(self) -> None:
+        """Render the widget."""
         if self.rendered:
             return
         self.rendered = True
 
-        self.advanced_options = ipw.Checkbox(
+        self.advanced_options = Checkbox(
             value=False, description="Show Advanced Options", index=True
         )
         self.advanced_options.observe(self._render_input_options, "value")
 
-        # QM Backend
-        self.qm_theory_dropdown = ipw.Dropdown(
-            options=self._get_qm_theory_options(),
-            description="QM Theory:",
-            disabled=False,
-            layout={"width": "50%"},
-        )
-
-        # Basis Quality
-        self.basis_dropdown = ipw.Dropdown(
+        self.basis_dropdown = Dropdown(
             options={e.name: e for e in BasisSetOptions},
             description="Basis Quality:",
             disabled=False,
@@ -109,21 +61,21 @@ class ChemShellOptionsWidget(ipw.VBox):
         self.basis_dropdown.observe(self._update_basis_set, "value")
         self.basis_dropdown.index = 1
 
-        self.basis_string = ipw.Text(
+        self.basis_string = Text(
             value="",
             description="Basis Set:",
             disabled=False,
             layout={"width": "50%"},
         )
         link((self.model, "basis_set"), (self.basis_string, "value"))
-        self.backend = ipw.Dropdown(
+        self.backend = Dropdown(
             options={e.name: e for e in ChemShellQMTheory},
             description="QM Backend:",
             disabled=False,
             layout={"width": "50%"},
         )
         link((self.model, "qm_theory"), (self.backend, "value"))
-        self.functional = ipw.Text(
+        self.functional = Text(
             value="B3LYP",
             description="Functional:",
             disabled=False,
@@ -131,22 +83,16 @@ class ChemShellOptionsWidget(ipw.VBox):
         )
         link((self.model, "functional"), (self.functional, "value"))
 
-        # Enable vibrational analysis
-        self.enable_vib = ipw.Checkbox(
-            value=True, description="Vibrational Frequencies", index=True
-        )
-        ipw.dlink((self.enable_vib, "value"), (self.model, "vibrational_analysis"))
+        self.derivatives = DerivativeOptions(self.model)
 
-        # DFT checkbox
-        # self.enable_dft = ipw.Checkbox(value=False, description="Use DFT", index=True)
-        # ipw.dlink((self.enable_dft, "value"), (self.model, "use_dft"))
-
-        # QM/MM Checkbox
-        self.enable_mm_chk = ipw.Checkbox(
-            value=False, description="Use QM/MM", indent=True
+        self.enable_vib = Checkbox(
+            value=False, description="Vibrational Frequencies", index=True
         )
+        dlink((self.enable_vib, "value"), (self.model, "vibrational_analysis"))
+
+        self.enable_mm_chk = Checkbox(value=False, description="Use QM/MM", indent=True)
         self.enable_mm_chk.observe(self._enable_mm_options, "value")
-        ipw.dlink((self.enable_mm_chk, "value"), (self.model, "use_mm"))
+        dlink((self.enable_mm_chk, "value"), (self.model, "use_mm"))
 
         # MM Backend
         # self.mm_theory_dropdown = ipw.Dropdown(
@@ -157,16 +103,19 @@ class ChemShellOptionsWidget(ipw.VBox):
         # )
 
         # QM region for QM/MM calculation
-        self.qm_region_text = ipw.Text(
+        self.qm_region_text = Text(
             value="",
             description="QM Region:",
-            disabled=True,
+            disabled=False,
             layout={"width": "50%"},
         )
         link((self.qm_region_text, "value"), (self.model, "qm_region"))
 
-        self._render_input_options({"new": self.advanced_options.value})
-        return
+        # Force Field File
+        self.ff_file = FileUploadWidget(description="Force Field:")
+        link((self.ff_file, "file"), (self.model, "force_field"))
+
+        self._render_basic_options()
 
     def _render_basic_options(self) -> None:
         """Render the simplified input options view."""
@@ -175,6 +124,7 @@ class ChemShellOptionsWidget(ipw.VBox):
             self.advanced_options,
             self.basis_dropdown,
             self.enable_vib,
+            self.derivatives,
             self.enable_mm_chk,
         ]
         if self.enable_mm_chk.value:
@@ -192,6 +142,7 @@ class ChemShellOptionsWidget(ipw.VBox):
             self.basis_string,
             self.functional,
             self.enable_vib,
+            self.derivatives,
             self.enable_mm_chk,
         ]
         if self.enable_mm_chk.value:
@@ -210,16 +161,56 @@ class ChemShellOptionsWidget(ipw.VBox):
             self._update_basis_set({"new": self.basis_dropdown.value, "old": None})
         return
 
-    def disable(self, val: bool) -> None:
-        """Disable the input fields."""
-        for child in self.children:
-            child.disabled = val
-        self.ff_file.disable(val)
-        return
-
     def _update_basis_set(self, change: dict) -> None:
         """Update the basis set based of the simplified input options."""
         if change["new"] == change["old"]:
             return
         self.model.basis_set = change["new"].label
+        return
+
+    def disable(self, disable: bool = True) -> None:
+        """Disable/Enable the wigets input options."""
+        for child in self.children:
+            child.disabled = disable
+        return
+
+    def _enable_mm_options(self, _) -> None:
+        self._render_input_options({"new": self.advanced_options.value})
+        return
+
+
+class DerivativeOptions(HBox, HasTraits):
+    """Inline derivative checkboxes."""
+
+    disabled = Bool(False).tag(sync=True)
+
+    def __init__(self, model: ChemShellWorkflowModel, **kwargs):
+        """
+        DerivativeOptions constructor.
+
+        Parameters
+        ----------
+        model : ChemShellWorkflowModel
+            The model that defines the data related to this step in the setup wizard.
+        **kwargs :
+            Keyword arguments passed to the parent class's constructor.
+        """
+        super().__init__(**kwargs)
+        self.model = model
+        self.label = HTML(
+            "<p>Energy Derivatives: </p>",
+        )
+        self.first = Checkbox(value=True, description="First Derivative")
+        self.second = Checkbox(value=False, description="Second Derivative")
+        link((self.first, "value"), (self.model, "gradients"))
+        link((self.second, "value"), (self.model, "hessian"))
+
+        self.observe(self.disable, "disabled")
+
+        self.children = [self.label, self.first, self.second]
+
+    def disable(self, change: dict) -> None:
+        """Disable the contained widgets."""
+        for child in self.children:
+            child.disabled = change["new"]
         return
