@@ -6,6 +6,7 @@ from aiida.orm import Dict, load_code
 from aiida.plugins import WorkflowFactory
 from ipywidgets import dlink
 
+from aiidalab_chemshell.common.chemshell import WorkflowOptions
 from aiidalab_chemshell.models.structure import StructureInputModel
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 from aiidalab_chemshell.wizards.resources import ComputationalResourcesModel
@@ -97,7 +98,13 @@ class ChemShellProcess:
 
     def submit_process(self):
         """Submit the AiiDA process."""
-        self._submit_optimisation_workflow()
+        match self.model.workflow_model.workflow:
+            case WorkflowOptions.GEOMETRY:
+                self._submit_optimisation_workflow()
+            case WorkflowOptions.ATOMIC_ENERGIES:
+                self._submit_atomic_energies_workflow()
+            case _:
+                print("ERROR :: Invalid Workflow Specified...")
         return
 
     def _submit_core_calcjob(self) -> None:
@@ -145,7 +152,7 @@ class ChemShellProcess:
 
     def _submit_optimisation_workflow(self) -> None:
         """Create and submit the AiiDA Workflow for a geometry optimisation."""
-        builder = WorkflowFactory("chemshell.opt").get_builder()
+        builder = WorkflowFactory("chemshell.opt").get_builder()  # pyright: ignore[reportFunctionMemberAccess]
         builder.chemsh.code = load_code(self.model.resource_model.code_label)
         if self.model.structure_model.has_file:
             builder.chemsh.structure = self.model.structure_model.structure_file
@@ -180,6 +187,27 @@ class ChemShellProcess:
             "num_machines": 1,
             "tot_num_mpiprocs": self.model.resource_model.ncpus,
         }
+        self.node = submit(builder)
+        self.node.label = self.model.resource_model.process_label
+        self.node.description = self.model.resource_model.process_description
+        return
+
+    def _submit_atomic_energies_workflow(self) -> None:
+        """Submit the IsolatedAtomEnergy WorkChain."""
+        builder = WorkflowFactory("chemshell.atomic_energies").get_builder()  # pyright: ignore[reportFunctionMemberAccess]
+        builder.code = load_code(self.model.resource_model.code_label)
+        if self.model.structure_model.has_file:
+            builder.structure = self.model.structure_model.structure_file
+        else:
+            builder.structure = self.model.structure_model.structure
+        builder.qm_parameters = Dict(
+            {
+                "theory": self.model.workflow_model.qm_theory,
+                "method": "dft",
+                "functional": self.model.workflow_model.functional,
+                "basis": self.model.workflow_model.basis_set,
+            }
+        )
         self.node = submit(builder)
         self.node.label = self.model.resource_model.process_label
         self.node.description = self.model.resource_model.process_description

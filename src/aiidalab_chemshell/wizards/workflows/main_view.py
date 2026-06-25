@@ -101,6 +101,8 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             self.submit_btn.description = "Submitted"
             self.submit_btn.disabled = True
             self.workflow_tabs.children[0].disable(True)
+        else:
+            self.workflow_tabs.children[self.workflow_tabs.selected_index].disable()
         return
 
     def _extract_qm_region(self) -> list[int]:

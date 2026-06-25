@@ -1,6 +1,7 @@
 """Defines the MVC models for ChemShell workflow specification."""
 
 from aiida.orm import SinglefileData
+from aiida_chemshell.utils import ChemShellQMTheory
 from traitlets import (
     Bool,
     HasTraits,
@@ -19,7 +20,7 @@ class ChemShellWorkflowModel(HasTraits):
     # workflow = Integer(0, allow_none=False).tag(sync=True)
     workflow = UseEnum(WorkflowOptions, WorkflowOptions.GEOMETRY, allow_none=False)
 
-    qm_theory = Unicode("NWChem", allow_none=False)
+    qm_theory = UseEnum(ChemShellQMTheory, ChemShellQMTheory.NWCHEM, allow_none=False)
     mm_theory = Unicode("DL_POLY", allow_none=True)
     qm_region = List([], allow_none=True)
     use_dft = Bool(True).tag(sync=True)

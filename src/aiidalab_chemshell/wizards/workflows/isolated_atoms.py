@@ -33,7 +33,8 @@ class IsolatedAtomEnergyWidget(VBox):
                 Extract all unique atom types from a given input structure and calculate
                 their isolated QM energy.
             </p>
-            """
+            """,
+            layout={"margin": "auto"},
         )
         self.children = [self.header, LoadingWidget()]
         return
@@ -67,11 +68,12 @@ class IsolatedAtomEnergyWidget(VBox):
         )
         link((self.model, "basis_set"), (self.basis_string, "value"))
         self.backend = Dropdown(
-            options=list(ChemShellQMTheory.__members__.keys()),
+            options={e.name: e for e in ChemShellQMTheory},
             description="QM Backend:",
-            disbled=False,
+            disabled=False,
             layout={"width": "50%"},
         )
+        link((self.model, "qm_theory"), (self.backend, "value"))
         self.functional = Text(
             value="B3LYP",
             description="Functional:",
@@ -109,6 +111,8 @@ class IsolatedAtomEnergyWidget(VBox):
             self._render_advanced_options()
         else:
             self._render_basic_options()
+            # Update the linked basis set value
+            self._update_basis_set({"new": self.basis_dropdown.value, "old": None})
         return
 
     def _update_basis_set(self, change: dict) -> None:
@@ -116,4 +120,10 @@ class IsolatedAtomEnergyWidget(VBox):
         if change["new"] == change["old"]:
             return
         self.model.basis_set = change["new"].label
+        return
+
+    def disable(self, disable: bool = True) -> None:
+        """Disable/Enable the wigets input options."""
+        for child in self.children:
+            child.disabled = disable
         return
