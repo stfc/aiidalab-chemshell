@@ -30,7 +30,7 @@ class WorkflowOptions(Enum):
     GEOMETRY = 0
     SINGLE_POINT = auto()
     ATOMIC_ENERGIES = auto()
-    NEB = auto()
+    # NEB = auto()
 
     @property
     def label(self) -> str:
@@ -42,8 +42,8 @@ class WorkflowOptions(Enum):
                 return "Single Point Energy"
             case WorkflowOptions.ATOMIC_ENERGIES:
                 return "Isolated Atomic Energies"
-            case WorkflowOptions.NEB:
-                return "Nudged Elastic Band"
+            # case WorkflowOptions.NEB:
+            #     return "Nudged Elastic Band"
             case _:
                 return ""
 
@@ -57,7 +57,7 @@ class WorkflowOptions(Enum):
                 return "SP Energy"
             case WorkflowOptions.ATOMIC_ENERGIES:
                 return "Atomic Energies"
-            case WorkflowOptions.NEB:
-                return "NEB"
+            # case WorkflowOptions.NEB:
+            #     return "NEB"
             case _:
                 return "ChemShell"
