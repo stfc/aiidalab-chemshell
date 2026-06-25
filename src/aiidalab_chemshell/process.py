@@ -156,12 +156,12 @@ class ChemShellProcess:
             builder.chemsh.structure = self.model.structure_model.structure
 
         # Configure workflow parameters
-        builder.basis_quality = self.model.workflow_model.basis_quality.name
         builder.chemsh.qm_parameters = Dict(
             {
                 "theory": self.model.workflow_model.qm_theory,
                 "method": "dft",
                 "functional": "B3LYP",
+                "basis": self.model.workflow_model.basis_quality.label,
             }
         )
         if self.model.workflow_model.use_mm:
@@ -186,6 +186,8 @@ class ChemShellProcess:
                 from aiida_mlip.helpers.help_load import load_model
 
                 builder.mlip_model = load_model(None, "mace_mp")
+                builder.mlip_model.label = "Base mace_mp model."
+                builder.mlip_model.description = "Base 'mace_mp' MLIP model."
 
         # Metadata options
         builder.chemsh.metadata.options.resources = {
