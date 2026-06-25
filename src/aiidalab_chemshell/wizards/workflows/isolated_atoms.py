@@ -28,13 +28,12 @@ class IsolatedAtomEnergyWidget(VBox):
         self.rendered = False
         self.header = HTML(
             """
-            <h3> Isolated Atomic Energy Calculation </h3>
+            <h3 style="text-align: center;">Isolated Atomic Energy Calculation</h3>
             <p>
                 Extract all unique atom types from a given input structure and calculate
                 their isolated QM energy.
             </p>
             """,
-            layout={"margin": "auto"},
         )
         self.children = [self.header, LoadingWidget()]
         return

@@ -29,14 +29,14 @@ class SinglePointCalcWidget(VBox):
         self.rendered = False
         self.header = HTML(
             """
-            <h3> Single Point Energy Calculation </h3>
+            <h3 style="text-align: center;">Single Point Energy Calculation</h3>
             <p>
                 Perform a single point calculation on a given input structure.
                 Optionally a vibrational frequency calculation can be performed
                 instead, again based on the given input structure.
             </p>
             """,
-            layout={"margin": "auto"},
+            # layout={"margin": "auto"},
         )
         self.children = [self.header, LoadingWidget()]
         return
