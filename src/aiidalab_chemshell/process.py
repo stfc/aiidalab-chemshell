@@ -103,6 +103,8 @@ class ChemShellProcess:
                 self._submit_optimisation_workflow()
             case WorkflowOptions.ATOMIC_ENERGIES:
                 self._submit_atomic_energies_workflow()
+            case WorkflowOptions.SINGLE_POINT:
+                self._submit_core_calcjob()
             case _:
                 print("ERROR :: Invalid Workflow Specified...")
         return
@@ -115,7 +117,7 @@ class ChemShellProcess:
             builder.structure = self.model.structure_model.structure
         builder.qm_parameters = Dict(
             {
-                "theory": self.model.workflow_model.qm_theory,
+                "theory": self.model.workflow_model.qm_theory.name,
                 "basis": self.model.workflow_model.basis_quality.label,
                 "method": "dft" if self.model.workflow_model.use_dft else "hf",
                 "functional": "B3LYP",
@@ -133,8 +135,14 @@ class ChemShellProcess:
                     "qm_region": self.model.workflow_model.qm_region,
                 }
             )
-        builder.calculation_parameters = Dict({"gradients": True})
-        builder.optimisation_parameters = Dict({})
+        builder.calculation_parameters = Dict(
+            {
+                "gradients": self.model.workflow_model.gradients,
+                "hessian": self.model.workflow_model.hessian,
+            }
+        )
+        if self.model.workflow_model.vibrational_analysis:
+            builder.optimisation_parameters = Dict({"thermal": True})
         if self.model.resource_model.ncpus > 1:
             builder.metadata.options.withmpi = True
         else:
@@ -179,7 +187,7 @@ class ChemShellProcess:
                     "qm_region": self.model.workflow_model.qm_region,
                 }
             )
-        builder.chemsh.calculation_parameters = Dict({"gradients": True})
+        # builder.chemsh.calculation_parameters = Dict({"gradients": True})
         builder.vibrational_analysis = self.model.workflow_model.vibrational_analysis
         builder.chemsh.metadata.options.resources = {
             "num_mpiprocs_per_machine": self.model.resource_model.ncpus,
@@ -202,7 +210,7 @@ class ChemShellProcess:
             builder.structure = self.model.structure_model.structure
         builder.qm_parameters = Dict(
             {
-                "theory": self.model.workflow_model.qm_theory,
+                "theory": self.model.workflow_model.qm_theory.name,
                 "method": "dft",
                 "functional": self.model.workflow_model.functional,
                 "basis": self.model.workflow_model.basis_set,

@@ -31,5 +31,7 @@ class ChemShellWorkflowModel(HasTraits):
     submitted = Bool(False).tag(sync=True)
     use_mm = Bool(False).tag(sync=True)
     vibrational_analysis = Bool(False).tag(sync=True)
+    gradients = Bool(True)
+    hessian = Bool(False)
 
     default_guide = ""

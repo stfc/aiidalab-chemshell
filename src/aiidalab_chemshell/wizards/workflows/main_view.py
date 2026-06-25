@@ -9,6 +9,7 @@ from aiidalab_chemshell.wizards.workflows.geometry_optimisation import (
     ChemShellOptionsWidget,
 )
 from aiidalab_chemshell.wizards.workflows.isolated_atoms import IsolatedAtomEnergyWidget
+from aiidalab_chemshell.wizards.workflows.single_point import SinglePointCalcWidget
 
 
 class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
@@ -150,6 +151,8 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
                 return ChemShellOptionsWidget(self.model)
             case WorkflowOptions.ATOMIC_ENERGIES:
                 return IsolatedAtomEnergyWidget(self.model)
+            case WorkflowOptions.SINGLE_POINT:
+                return SinglePointCalcWidget(self.model)
             case _:
                 return ipw.VBox()
 
