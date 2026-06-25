@@ -83,6 +83,7 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         # Create the wizard from the component widgets
         self.children = [self.header, self.guide, self.workflow_tabs, self.submit_btn]
         self.rendered = True
+        self.workflow_tabs.children[self.workflow_tabs.selected_index].render()
         return
 
     def _submit(self, _):

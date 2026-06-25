@@ -58,9 +58,8 @@ class SinglePointCalcWidget(VBox):
             disabled=False,
             layout={"width": "50%"},
         )
-        self.basis_dropdown.index = 1
         self.basis_dropdown.observe(self._update_basis_set, "value")
-        # link((self.model, "basis_quality"), (self.basis_dropdown, "value"))
+        self.basis_dropdown.index = 1
 
         self.basis_string = Text(
             value="",

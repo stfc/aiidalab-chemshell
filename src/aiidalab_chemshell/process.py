@@ -118,9 +118,9 @@ class ChemShellProcess:
         builder.qm_parameters = Dict(
             {
                 "theory": self.model.workflow_model.qm_theory.name,
-                "basis": self.model.workflow_model.basis_quality.label,
                 "method": "dft" if self.model.workflow_model.use_dft else "hf",
-                "functional": "B3LYP",
+                "functional": self.model.workflow_model.functional,
+                "basis": self.model.workflow_model.basis_set,
             }
         )
         if self.model.workflow_model.use_mm:
@@ -169,13 +169,13 @@ class ChemShellProcess:
         else:
             builder.chemsh.structure = self.model.structure_model.structure
 
-        builder.basis_quality = self.model.workflow_model.basis_quality.name
         if self.model.workflow_model.use_mm:
             builder.chemsh.qm_parameters = Dict(
                 {
                     "theory": self.model.workflow_model.qm_theory,
                     "method": "dft",
-                    "functional": "B3LYP",
+                    "functional": self.model.workflow_model.functional,
+                    "basis": self.model.workflow_model.basis_set,
                 }
             )
             builder.chemsh.mm_parameters = Dict(

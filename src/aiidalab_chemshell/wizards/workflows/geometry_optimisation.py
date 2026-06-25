@@ -1,10 +1,12 @@
 """Defines the input widget for the base geometry optimisation workflow."""
 
 import ipywidgets as ipw
+from aiida_chemshell.utils import ChemShellQMTheory
 from traitlets import link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
 from aiidalab_chemshell.common.file_handling import FileUploadWidget
+from aiidalab_chemshell.common.utils import LoadingWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
 
@@ -28,12 +30,7 @@ class ChemShellOptionsWidget(ipw.VBox):
 
         self.header = ipw.HTML(
             """
-            <h3> QM/MM Geometry Optimisation </h3>
-            """,
-            layout={"margin": "auto"},
-        )
-        self.guide = ipw.HTML(
-            """
+            <h3 style="text-align: center;"> QM/MM Geometry Optimisation </h3>
             <p>
                 Perform a geometry optimisation on the given structure via either QM or
                 QM/MM. Uses NWChem for the QM region and DL_POLY for the (optional) MM
@@ -41,29 +38,102 @@ class ChemShellOptionsWidget(ipw.VBox):
                 set option, higher quality basis set will result in a more accurate QM
                 calculation but will increase the time required.
             </p>
-            """
+            """,
+            layout={"margin": "auto"},
         )
 
+        # Force Field File
+        self.ff_file = FileUploadWidget(description="Force Field:")
+        self.ff_file.disable(True)
+
+        self.children = [self.header, LoadingWidget()]
+
+        return
+
+    def _get_qm_theory_options(self) -> list[str]:
+        """Get the available QM theory options."""
+        try:
+            from aiida_chemshell.utils import ChemShellQMTheory
+
+            return list(ChemShellQMTheory.__members__.keys())
+        except ImportError:
+            return []
+        except Exception as e:
+            raise e
+
+    def _get_mm_theory_options(self) -> list[str]:
+        """Get the available MM theory options."""
+        try:
+            from aiida_chemshell.utils import ChemShellMMTheory
+
+            return list(ChemShellMMTheory.__members__.keys())
+        except ImportError:
+            return []
+        except Exception as e:
+            raise e
+
+    def _enable_mm_options(self, _) -> None:
+        self._render_input_options({"new": self.advanced_options.value})
+        return
+
+    # def _update_basis_quality(self, _) -> None:
+    #     print(self.model.basis_quality)
+    #     return
+
+    def render(self):
+        """Render the options widget contents if not already rendered."""
+        if self.rendered:
+            return
+        self.rendered = True
+
+        self.advanced_options = ipw.Checkbox(
+            value=False, description="Show Advanced Options", index=True
+        )
+        self.advanced_options.observe(self._render_input_options, "value")
+
         # QM Backend
-        # self.qm_theory_dropdown = ipw.Dropdown(
-        #     options=self._get_qm_theory_options(),
-        #     description="QM Theory:",
-        #     disabled=False,
-        #     layout={"width": "50%"},
-        # )
+        self.qm_theory_dropdown = ipw.Dropdown(
+            options=self._get_qm_theory_options(),
+            description="QM Theory:",
+            disabled=False,
+            layout={"width": "50%"},
+        )
 
         # Basis Quality
-        self.qm_basis_dropdown = ipw.Dropdown(
+        self.basis_dropdown = ipw.Dropdown(
             options={e.name: e for e in BasisSetOptions},
             description="Basis Quality:",
             disabled=False,
             layout={"width": "50%"},
         )
-        link((self.model, "basis_quality"), (self.qm_basis_dropdown, "value"))
+        self.basis_dropdown.observe(self._update_basis_set, "value")
+        self.basis_dropdown.index = 1
+
+        self.basis_string = ipw.Text(
+            value="",
+            description="Basis Set:",
+            disabled=False,
+            layout={"width": "50%"},
+        )
+        link((self.model, "basis_set"), (self.basis_string, "value"))
+        self.backend = ipw.Dropdown(
+            options={e.name: e for e in ChemShellQMTheory},
+            description="QM Backend:",
+            disabled=False,
+            layout={"width": "50%"},
+        )
+        link((self.model, "qm_theory"), (self.backend, "value"))
+        self.functional = ipw.Text(
+            value="B3LYP",
+            description="Functional:",
+            disabled=False,
+            layout={"width": "50%"},
+        )
+        link((self.model, "functional"), (self.functional, "value"))
 
         # Enable vibrational analysis
         self.enable_vib = ipw.Checkbox(
-            value=True, description="Calculate Vibrational Frequencies", index=True
+            value=True, description="Vibrational Frequencies", index=True
         )
         ipw.dlink((self.enable_vib, "value"), (self.model, "vibrational_analysis"))
 
@@ -95,65 +165,49 @@ class ChemShellOptionsWidget(ipw.VBox):
         )
         link((self.qm_region_text, "value"), (self.model, "qm_region"))
 
-        # Force Field File
-        self.ff_file = FileUploadWidget(description="Force Field:")
-        self.ff_file.disable(True)
+        self._render_input_options({"new": self.advanced_options.value})
+        return
 
-        self.children = [
+    def _render_basic_options(self) -> None:
+        """Render the simplified input options view."""
+        children = [
             self.header,
-            self.guide,
-            # self.qm_theory_dropdown,
-            self.qm_basis_dropdown,
+            self.advanced_options,
+            self.basis_dropdown,
             self.enable_vib,
-            # self.enable_dft,
             self.enable_mm_chk,
-            # self.mm_theory_dropdown,
-            self.qm_region_text,
-            self.ff_file,
         ]
-
-        # self.layout = Layout(margin="auto")
-
+        if self.enable_mm_chk.value:
+            children.append(self.qm_region_text)
+            children.append(self.ff_file)
+        self.children = children
         return
 
-    def _get_qm_theory_options(self) -> list[str]:
-        """Get the available QM theory options."""
-        try:
-            from aiida_chemshell.utils import ChemShellQMTheory
-
-            return list(ChemShellQMTheory.__members__.keys())
-        except ImportError:
-            return []
-        except Exception as e:
-            raise e
-
-    def _get_mm_theory_options(self) -> list[str]:
-        """Get the available MM theory options."""
-        try:
-            from aiida_chemshell.utils import ChemShellMMTheory
-
-            return list(ChemShellMMTheory.__members__.keys())
-        except ImportError:
-            return []
-        except Exception as e:
-            raise e
-
-    def _enable_mm_options(self, _) -> None:
-        # self.mm_theory_dropdown.disabled = not self.enable_mm_chk.value
-        self.qm_region_text.disabled = not self.enable_mm_chk.value
-        self.ff_file.disable(not self.enable_mm_chk.value)
+    def _render_advanced_options(self) -> None:
+        """Render the advanced input options view."""
+        children = [
+            self.header,
+            self.advanced_options,
+            self.backend,
+            self.basis_string,
+            self.functional,
+            self.enable_vib,
+            self.enable_mm_chk,
+        ]
+        if self.enable_mm_chk.value:
+            children.append(self.qm_region_text)
+            children.append(self.ff_file)
+        self.children = children
         return
 
-    # def _update_basis_quality(self, _) -> None:
-    #     print(self.model.basis_quality)
-    #     return
-
-    def render(self):
-        """Render the options widget contents if not already rendered."""
-        if self.rendered:
-            return
-
-        self.rendered = True
+    def _render_input_options(self, change: dict) -> None:
+        """Switch between basic and advanced views."""
+        if change["new"]:
+            self._render_advanced_options()
+        else:
+            self._render_basic_options()
+            # Update the linked basis set value
+            self._update_basis_set({"new": self.basis_dropdown.value, "old": None})
         return
 
     def disable(self, val: bool) -> None:
@@ -161,4 +215,11 @@ class ChemShellOptionsWidget(ipw.VBox):
         for child in self.children:
             child.disabled = val
         self.ff_file.disable(val)
+        return
+
+    def _update_basis_set(self, change: dict) -> None:
+        """Update the basis set based of the simplified input options."""
+        if change["new"] == change["old"]:
+            return
+        self.model.basis_set = change["new"].label
         return
