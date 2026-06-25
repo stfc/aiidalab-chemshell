@@ -8,6 +8,7 @@ from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 from aiidalab_chemshell.wizards.workflows.geometry_optimisation import (
     ChemShellOptionsWidget,
 )
+from aiidalab_chemshell.wizards.workflows.isolated_atoms import IsolatedAtomEnergyWidget
 
 
 class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
@@ -145,9 +146,12 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         match workflow:
             case WorkflowOptions.GEOMETRY:
                 return ChemShellOptionsWidget(self.model)
+            case WorkflowOptions.ATOMIC_ENERGIES:
+                return IsolatedAtomEnergyWidget(self.model)
             case _:
                 return ipw.VBox()
 
     def _update_selected_workflow(self, _) -> None:
         self.model.workflow = WorkflowOptions(self.workflow_tabs.selected_index)
+        self.workflow_tabs.children[self.workflow_tabs.selected_index].render()
         return

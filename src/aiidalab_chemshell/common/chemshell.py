@@ -28,6 +28,8 @@ class WorkflowOptions(Enum):
     """Enum defining the available ChemShell based AiiDA workflows."""
 
     GEOMETRY = 0
+    SINGLE_POINT = auto()
+    ATOMIC_ENERGIES = auto()
     NEB = auto()
 
     @property
@@ -36,6 +38,10 @@ class WorkflowOptions(Enum):
         match self:
             case WorkflowOptions.GEOMETRY:
                 return "Geometry Optimisation"
+            case WorkflowOptions.SINGLE_POINT:
+                return "Single Point Energy"
+            case WorkflowOptions.ATOMIC_ENERGIES:
+                return "Isolated Atomic Energies"
             case WorkflowOptions.NEB:
                 return "Nudged Elastic Band"
             case _:
@@ -47,6 +53,10 @@ class WorkflowOptions(Enum):
         match self:
             case WorkflowOptions.GEOMETRY:
                 return "Optimisation"
+            case WorkflowOptions.SINGLE_POINT:
+                return "SP Energy"
+            case WorkflowOptions.ATOMIC_ENERGIES:
+                return "Atomic Energies"
             case WorkflowOptions.NEB:
                 return "NEB"
             case _:
