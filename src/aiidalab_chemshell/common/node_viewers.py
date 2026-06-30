@@ -1,13 +1,12 @@
 """Defines a custom AiiDA node visualiser."""
 
-from aiida.orm import ArrayData, Float, Node, ProcessNode, SinglefileData, StructureData
+from aiida.orm import ArrayData, Float, Node, ProcessNode, SinglefileData
 from aiidalab_widgets_base.loaders import LoadingWidget
 from aiidalab_widgets_base.viewers import AIIDA_VIEWER_MAPPING
+from alc_aiidalab_widgets.viewers import ALC_AIIDA_VIEWER_MAPPING
 from IPython.display import clear_output, display
-from ipywidgets import HTML, DOMWidget, Dropdown, Output, VBox
+from ipywidgets import HTML, DOMWidget, Output, VBox
 from traitlets import Instance, observe
-
-from aiidalab_chemshell.common.structure_viewer import StructureViewWidget
 
 
 class CustomAiidaNodeViewWidget(VBox):
@@ -53,28 +52,29 @@ class CustomAiidaNodeViewWidget(VBox):
 
     def _viewer(self, node: Node, **kwargs):  # noqa: C901
         """Create a viewer based on the type of Node being visualised."""
-        _viewer = AIIDA_VIEWER_MAPPING.get(node.node_type)
+        # First look for ALC developed node viewers
+        _viewer = ALC_AIIDA_VIEWER_MAPPING.get(node.node_type)
+        if not _viewer:
+            # Fall beack to default AiiDAlab developed node viewers
+            _viewer = AIIDA_VIEWER_MAPPING.get(node.node_type)
         if isinstance(node, ProcessNode):
             # Allow to register specific viewers based on node.process_type
-            _viewer = AIIDA_VIEWER_MAPPING.get(node.process_type, _viewer)
+            _viewer = ALC_AIIDA_VIEWER_MAPPING.get(node.node_type, _viewer)
+            if not _viewer:
+                _viewer = AIIDA_VIEWER_MAPPING.get(node.process_type, _viewer)
 
         # Handle custom ChemShell specific visualisation
         if isinstance(node, SinglefileData):
             # Singlefile data output generally refers to a structure file
             # output from ChemShell jobs
             if "Structure" in node.label:
-                _viewer = StructureViewWidget(**kwargs)
-                _viewer.assign_structure_from_file(node.filename, node.content)
-                return _viewer
-
-        if isinstance(node, StructureData):
-            _viewer = StructureData(**kwargs)
-            _viewer.assign_structure_from_ase(node.get_ase())
-            return _viewer
+                _viewer = ALC_AIIDA_VIEWER_MAPPING.get(
+                    "data.core.structure.StructureData.", _viewer
+                )
 
         if isinstance(node, ArrayData):
             if "Energy Derivative" in node.label:
-                return AiidaGradientDataViewWidget(node, **kwargs)
+                _viewer = ALC_AIIDA_VIEWER_MAPPING.get("xyz_table", _viewer)
             if "Vibrational" in node.label:
                 return VibrationalModesViewWidget(node, **kwargs)
 
@@ -86,56 +86,6 @@ class CustomAiidaNodeViewWidget(VBox):
             return _viewer(node, **kwargs)
         # No viewer registered for this type, return node itself
         return node
-
-
-class AiidaGradientDataViewWidget(VBox):
-    """Custom widget to display array data produced from ChemShell jobs."""
-
-    def __init__(self, array: ArrayData, **kwargs):
-        """AiidaArrayDataViewWidget Constructor.
-
-        Parameters
-        ----------
-        array : ArrayData
-            The AiiDA ArrayData object to display.
-        """
-        super().__init__(**kwargs)
-        self.array = array
-        self.array_names = array.get_arraynames()
-
-        self.array_selector = Dropdown(
-            options=self.array_names,
-            description="Array Label:",
-            disabled=False,
-            layout={"width": "30%"},
-        )
-        self._render_array({"new": self.array_selector.index, "old": -1})
-        self.array_selector.observe(self._render_array, "index")
-
-        return
-
-    def _render_array(self, change) -> None:
-        """Create a HTML table based on the currently selected array."""
-        index = change["new"]
-        if index == change["old"]:
-            return
-        values = self.array.get_array(self.array_names[index])
-        # Construct HTML Table
-        html = "<table style='width:100%; border: 1px solid #ddd; text-align: left; "
-        html += "border-collapse: collapse;'>"
-        html += "<tr style='background-color: #2196F3; color: white;'>"
-        html += "<th>Atom Index</th><th>X</th><th>Y</th><th>Z</th></tr>"
-
-        for idx, row in enumerate(values):
-            bg_color = "#f9f9f9" if idx % 2 == 0 else "#ffffff"
-            html += f"<tr style='background-color: {bg_color};'>"
-            html += f"<td><b>{idx}</b></td><td>{row[0]:.6f}</td><td>{row[1]:.6f}</td>"
-            html += f"<td>{row[2]:.6f}</td>"
-            html += "</tr>"
-        html += "</table>"
-
-        self.children = [self.array_selector, HTML(html)]
-        return
 
 
 class VibrationalModesViewWidget(VBox):
