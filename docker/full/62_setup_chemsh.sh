@@ -2,9 +2,9 @@
 
 ## Setup an AiiDA code instance for locally installed ChemShell
 
-source /opt/intel/oneapi/setvars.sh 
+# source /opt/intel/oneapi/setvars.sh 
 
-export PATH="/opt/chemsh-py/bin/intel:${PATH}"
+# export PATH="/opt/chemsh-py/bin/intel:${PATH}"
 
 if verdi code list | grep -q "chemsh@localhost"; then 
     echo "Found existing AiiDA ChemShell code instance..." 

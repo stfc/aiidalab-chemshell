@@ -5,5 +5,5 @@ filepath_executable: /opt/chemsh-py/bin/intel/chemsh.x
 default_calc_job_plugin: chemshell
 use_double_quotes: false
 with_mpi: true
-prepend_text: ''
+prepend_text: 'source /opt/intel/oneapi/setvars.sh'
 append_text: ''
