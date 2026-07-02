@@ -36,7 +36,7 @@ def get_app_dir() -> pathlib.Path:
     """
     return (
         pathlib.Path(getenv("AIIDALAB_APPS", getenv("HOME", "") + "/apps/"))
-        / "aiidaleb-chemshell/"
+        / "chemshell/"
     )
 
 

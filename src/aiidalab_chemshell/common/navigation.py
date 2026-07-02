@@ -31,7 +31,7 @@ class QuickAccessButtons(ipw.HBox):
         self.new_calc_link.on_click(
             partial(
                 open_link_in_new_tab,
-                _APPS_DIRECTORY + "aiidalab-chemshell/notebooks/main.ipynb",
+                _APPS_DIRECTORY + "chemshell/notebooks/main.ipynb",
             )
         )
 
@@ -45,7 +45,7 @@ class QuickAccessButtons(ipw.HBox):
         self.history_link.on_click(
             partial(
                 open_link_in_new_tab,
-                _APPS_DIRECTORY + "aiidalab-chemshell/notebooks/history.ipynb",
+                _APPS_DIRECTORY + "chemshell/notebooks/history.ipynb",
             )
         )
 
@@ -59,7 +59,7 @@ class QuickAccessButtons(ipw.HBox):
         self.resource_setup_link.on_click(
             partial(
                 open_link_in_new_tab,
-                _APPS_DIRECTORY + "aiidalab-chemshell/notebooks/resources.ipynb",
+                _APPS_DIRECTORY + "chemshell/notebooks/resources.ipynb",
             )
         )
 
