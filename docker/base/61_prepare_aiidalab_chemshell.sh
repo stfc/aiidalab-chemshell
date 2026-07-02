@@ -7,7 +7,7 @@ if [[ -d "chemshell" ]]; then
     echo "AiiDAlab ChemShell app already installed..." 
 else 
     # pip install -e git+https://github.com/stfc/aiidalab-chemshell.git#egg=aiidalab-chemshell --src ${HOME}/apps
-    git clone -b v0.2.0 --depth 1  https://github.com/stfc/aiidalab-chemshell.git
+    git clone -b v0.2.1 --depth 1  https://github.com/stfc/aiidalab-chemshell.git
     mv aiidalab-chemshell chemshell 
 fi 
 
