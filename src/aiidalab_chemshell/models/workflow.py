@@ -11,6 +11,7 @@ from traitlets import (
 )
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions, WorkflowOptions
+from aiidalab_chemshell.models.structure import StructureInputModel
 
 
 class ChemShellWorkflowModel(HasTraits):
@@ -32,5 +33,7 @@ class ChemShellWorkflowModel(HasTraits):
     vibrational_analysis = Bool(False).tag(sync=True)
     gradients = Bool(True)
     hessian = Bool(False)
+
+    structure_2 = StructureInputModel()
 
     default_guide = ""

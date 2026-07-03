@@ -1,1 +1,186 @@
 """Defines the input widget for the nudged elastic band workflow."""
+
+from aiida_chemshell.utils import ChemShellQMTheory
+from ipywidgets import HTML, Checkbox, Dropdown, Text, VBox, dlink, link
+
+from aiidalab_chemshell.common.chemshell import BasisSetOptions
+from aiidalab_chemshell.common.file_handling import FileUploadWidget
+from aiidalab_chemshell.common.structure_uploader import StructureSelectionWidget
+from aiidalab_chemshell.common.utils import LoadingWidget
+from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
+from aiidalab_chemshell.wizards.workflows.single_point import DerivativeOptions
+
+
+class NEBOptionsWidget(VBox):
+    """Widget for setting up an NEB calculation."""
+
+    def __init__(self, model: ChemShellWorkflowModel, **kwargs):
+        """
+        NEBOptionsWidget constructor.
+
+        Parameters
+        ----------
+        model : ChemShellWorkflowModel
+            The model that defines the data related to this step in the setup wizard.
+        **kwargs :
+            Keyword arguments passed to the parent class's constructor.
+        """
+        super().__init__(**kwargs)
+        self.model = model
+        self.rendered = False
+
+        self.header = HTML(
+            """
+            <h3 style="text-align: center;"> Nudged Elastic Band Calculation </h3>
+            <p>
+                Carry out a nudged elastic band calculation to determine the pathway
+                between two structures. You can input the second structure here and
+                configure the general QM and MM parameters for the calculation.
+            </p>
+            """,
+        )
+        self.h_line = HTML("<hr>")
+        self.children = [self.header, LoadingWidget()]
+        return
+
+    def render(self) -> None:
+        """Render the widget."""
+        if self.rendered:
+            return
+        self.rendered = True
+        self.structure_widget = StructureSelectionWidget()
+        self.advanced_options = Checkbox(
+            value=False, description="Show Advanced Options", index=True
+        )
+        self.advanced_options.observe(self._render_input_options, "value")
+
+        self.basis_dropdown = Dropdown(
+            options={e.name: e for e in BasisSetOptions},
+            description="Basis Quality:",
+            disabled=False,
+            layout={"width": "50%"},
+        )
+        self.basis_dropdown.observe(self._update_basis_set, "value")
+        self.basis_dropdown.index = 1
+
+        self.basis_string = Text(
+            value="",
+            description="Basis Set:",
+            disabled=False,
+            layout={"width": "50%"},
+        )
+        link((self.model, "basis_set"), (self.basis_string, "value"))
+        self.backend = Dropdown(
+            options={e.name: e for e in ChemShellQMTheory},
+            description="QM Backend:",
+            disabled=False,
+            layout={"width": "50%"},
+        )
+        link((self.model, "qm_theory"), (self.backend, "value"))
+        self.functional = Text(
+            value="B3LYP",
+            description="Functional:",
+            disabled=False,
+            layout={"width": "50%"},
+        )
+        link((self.model, "functional"), (self.functional, "value"))
+
+        self.derivatives = DerivativeOptions(self.model)
+
+        self.enable_vib = Checkbox(
+            value=False, description="Vibrational Frequencies", index=True
+        )
+        dlink((self.enable_vib, "value"), (self.model, "vibrational_analysis"))
+
+        self.enable_mm_chk = Checkbox(value=False, description="Use QM/MM", indent=True)
+        self.enable_mm_chk.observe(self._enable_mm_options, "value")
+        dlink((self.enable_mm_chk, "value"), (self.model, "use_mm"))
+
+        # MM Backend
+        # self.mm_theory_dropdown = ipw.Dropdown(
+        #     options=self._get_mm_theory_options(),
+        #     description="MM Theory:",
+        #     disabled=True,
+        #     layout={"width": "50%"},
+        # )
+
+        # QM region for QM/MM calculation
+        self.qm_region_text = Text(
+            value="",
+            description="QM Region:",
+            disabled=False,
+            layout={"width": "50%"},
+        )
+        link((self.qm_region_text, "value"), (self.model, "qm_region"))
+
+        # Force Field File
+        self.ff_file = FileUploadWidget(description="Force Field:")
+        link((self.ff_file, "file"), (self.model, "force_field"))
+
+        self._render_basic_options()
+        return
+
+    def _render_basic_options(self) -> None:
+        """Render the simplified input options view."""
+        children = [
+            self.header,
+            self.structure_widget,
+            self.h_line,
+            self.advanced_options,
+            self.basis_dropdown,
+            self.enable_vib,
+            self.derivatives,
+            self.enable_mm_chk,
+        ]
+        if self.enable_mm_chk.value:
+            children.append(self.qm_region_text)
+            children.append(self.ff_file)
+        self.children = children
+        return
+
+    def _render_advanced_options(self) -> None:
+        """Render the advanced input options view."""
+        children = [
+            self.header,
+            self.structure_widget,
+            self.h_line,
+            self.advanced_options,
+            self.backend,
+            self.basis_string,
+            self.functional,
+            self.enable_vib,
+            self.derivatives,
+            self.enable_mm_chk,
+        ]
+        if self.enable_mm_chk.value:
+            children.append(self.qm_region_text)
+            children.append(self.ff_file)
+        self.children = children
+        return
+
+    def _update_basis_set(self, change: dict) -> None:
+        """Update the basis set based of the simplified input options."""
+        if change["new"] == change["old"]:
+            return
+        self.model.basis_set = change["new"].label
+        return
+
+    def _render_input_options(self, change: dict) -> None:
+        """Switch between basic and advanced views."""
+        if change["new"]:
+            self._render_advanced_options()
+        else:
+            self._render_basic_options()
+            # Update the linked basis set value
+            self._update_basis_set({"new": self.basis_dropdown.value, "old": None})
+        return
+
+    def _enable_mm_options(self, _) -> None:
+        self._render_input_options({"new": self.advanced_options.value})
+        return
+
+    def disable(self, val: bool) -> None:
+        """Disable the input fields within the widget."""
+        for child in self.children:
+            child.disabled = val
+        return
