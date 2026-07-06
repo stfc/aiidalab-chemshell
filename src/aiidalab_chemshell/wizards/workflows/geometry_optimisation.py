@@ -2,10 +2,12 @@
 
 import ipywidgets as ipw
 from aiida_chemshell.utils import ChemShellQMTheory
+from alc_aiidalab_widgets.widgets import FileUploadWidget
 from traitlets import link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
-from aiidalab_chemshell.common.file_handling import FileUploadWidget
+
+# from aiidalab_chemshell.common.file_handling import FileUploadWidget
 from aiidalab_chemshell.common.utils import LoadingWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
@@ -44,7 +46,6 @@ class ChemShellOptionsWidget(ipw.VBox):
 
         # Force Field File
         self.ff_file = FileUploadWidget(description="Force Field:")
-        self.ff_file.disable(True)
 
         self.children = [self.header, LoadingWidget()]
 
@@ -160,7 +161,7 @@ class ChemShellOptionsWidget(ipw.VBox):
         self.qm_region_text = ipw.Text(
             value="",
             description="QM Region:",
-            disabled=True,
+            disabled=False,
             layout={"width": "50%"},
         )
         link((self.qm_region_text, "value"), (self.model, "qm_region"))
