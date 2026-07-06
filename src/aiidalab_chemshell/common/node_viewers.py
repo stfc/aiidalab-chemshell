@@ -55,11 +55,11 @@ class CustomAiidaNodeViewWidget(VBox):
         # First look for ALC developed node viewers
         _viewer = ALC_AIIDA_VIEWER_MAPPING.get(node.node_type)
         if not _viewer:
-            # Fall beack to default AiiDAlab developed node viewers
+            # Fall back to default AiiDAlab developed node viewers
             _viewer = AIIDA_VIEWER_MAPPING.get(node.node_type)
         if isinstance(node, ProcessNode):
             # Allow to register specific viewers based on node.process_type
-            _viewer = ALC_AIIDA_VIEWER_MAPPING.get(node.node_type, _viewer)
+            _viewer = ALC_AIIDA_VIEWER_MAPPING.get(node.process_type, _viewer)  # type: ignore
             if not _viewer:
                 _viewer = AIIDA_VIEWER_MAPPING.get(node.process_type, _viewer)
 
