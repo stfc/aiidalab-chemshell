@@ -89,23 +89,26 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
 
     def _submit(self, _):
         """Store the ChemShell parameters in the ChemShell workflow model."""
+        # Check for force field file if MM has been requested
+        if self.model.use_mm and self.model.workflow != WorkflowOptions.ATOMIC_ENERGIES:
+            if not self.model.force_field:
+                print("ERROR: No force field file found...")
+                return
+        # Check for second structure file is NEB is requested
+        if self.model.workflow == WorkflowOptions.NEB:
+            if (
+                not self.model.structure_2.has_file
+                and not self.model.structure_2.has_structure
+            ):
+                print("ERROR: NEB calculation requires a second structure input.")
+                return
+        # Disable the widgets and mark as submitted
         if self.workflow_tabs.selected_index == 0:
-            # self.model.qm_theory = self.workflow_tabs.children[
-            #     0
-            # ].qm_theory_dropdown.value
-            # self.model.mm_theory = self.workflow_tabs.children[
-            #     0
-            # ].mm_theory_dropdown.value
-            # self.model.qm_region = self._extract_qm_region()
-            if self.model.use_mm:
-                if not self.model.force_field:
-                    print("ERROR: No force field file found...")
-                    return
-            self.submit_btn.description = "Submitted"
-            self.submit_btn.disabled = True
             self.workflow_tabs.children[0].disable(True)
         else:
             self.workflow_tabs.children[self.workflow_tabs.selected_index].disable()
+        self.submit_btn.description = "Submitted"
+        self.submit_btn.disabled = True
         return
 
     def _generate_workflow_widgets(self, workflow: WorkflowOptions) -> ipw.VBox:
