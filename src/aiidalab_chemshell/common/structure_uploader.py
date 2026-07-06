@@ -2,13 +2,13 @@
 
 from aiida.orm import SinglefileData, StructureData, TrajectoryData
 from aiidalab_widgets_base import SmilesWidget
+from alc_aiidalab_widgets.widgets import StructureViewWidget
 from ase import Atoms
 from ipywidgets import HTML, Tab, VBox, dlink
 from traitlets import HasTraits, Instance
 
 from aiidalab_chemshell.common.database import AiiDADatabaseWidget
 from aiidalab_chemshell.common.file_handling import FileUploadWidget
-from aiidalab_chemshell.common.structure_viewer import StructureViewWidget
 
 
 class StructureSelectionWidget(VBox, HasTraits):
