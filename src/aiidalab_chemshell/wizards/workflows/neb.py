@@ -8,7 +8,6 @@ from aiidalab_chemshell.common.file_handling import FileUploadWidget
 from aiidalab_chemshell.common.structure_uploader import StructureSelectionWidget
 from aiidalab_chemshell.common.utils import LoadingWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
-from aiidalab_chemshell.wizards.workflows.single_point import DerivativeOptions
 
 
 class NEBOptionsWidget(VBox):
@@ -49,6 +48,16 @@ class NEBOptionsWidget(VBox):
             return
         self.rendered = True
         self.structure_widget = StructureSelectionWidget()
+
+        dlink(
+            (self.structure_widget, "structure_file"),
+            (self.model.structure_2, "structure_file"),
+        )
+        dlink(
+            (self.structure_widget, "structure_data"),
+            (self.model.structure_2, "structure"),
+        )
+
         self.advanced_options = Checkbox(
             value=False, description="Show Advanced Options", index=True
         )
@@ -84,13 +93,6 @@ class NEBOptionsWidget(VBox):
             layout={"width": "50%"},
         )
         link((self.model, "functional"), (self.functional, "value"))
-
-        self.derivatives = DerivativeOptions(self.model)
-
-        self.enable_vib = Checkbox(
-            value=False, description="Vibrational Frequencies", index=True
-        )
-        dlink((self.enable_vib, "value"), (self.model, "vibrational_analysis"))
 
         self.enable_mm_chk = Checkbox(value=False, description="Use QM/MM", indent=True)
         self.enable_mm_chk.observe(self._enable_mm_options, "value")
@@ -128,8 +130,6 @@ class NEBOptionsWidget(VBox):
             self.h_line,
             self.advanced_options,
             self.basis_dropdown,
-            self.enable_vib,
-            self.derivatives,
             self.enable_mm_chk,
         ]
         if self.enable_mm_chk.value:
@@ -148,8 +148,6 @@ class NEBOptionsWidget(VBox):
             self.backend,
             self.basis_string,
             self.functional,
-            self.enable_vib,
-            self.derivatives,
             self.enable_mm_chk,
         ]
         if self.enable_mm_chk.value:
@@ -179,7 +177,7 @@ class NEBOptionsWidget(VBox):
         self._render_input_options({"new": self.advanced_options.value})
         return
 
-    def disable(self, val: bool) -> None:
+    def disable(self, val: bool = True) -> None:
         """Disable the input fields within the widget."""
         for child in self.children:
             child.disabled = val

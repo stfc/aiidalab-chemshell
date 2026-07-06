@@ -103,18 +103,19 @@ class ChemShellProcess:
                 self._submit_optimisation_workflow()
             case WorkflowOptions.ATOMIC_ENERGIES:
                 self._submit_atomic_energies_workflow()
-            case WorkflowOptions.SINGLE_POINT:
-                self._submit_core_calcjob()
             case _:
-                print("ERROR :: Invalid Workflow Specified...")
+                self._submit_core_calcjob()
         return
 
     def _submit_core_calcjob(self) -> None:
+        # Get the ChemShell code instance
         builder = load_code(self.model.resource_model.code_label).get_builder()
+        # Configure the structure input
         if self.model.structure_model.has_file:
             builder.structure = self.model.structure_model.structure_file
         else:
             builder.structure = self.model.structure_model.structure
+        # Configure the QM theory input parameters
         builder.qm_parameters = Dict(
             {
                 "theory": self.model.workflow_model.qm_theory.name,
@@ -123,6 +124,7 @@ class ChemShellProcess:
                 "basis": self.model.workflow_model.basis_set,
             }
         )
+        # Configure MM parameters if QM/MM approach specified
         if self.model.workflow_model.use_mm:
             builder.mm_parameters = Dict(
                 {
@@ -137,14 +139,25 @@ class ChemShellProcess:
                     ),
                 }
             )
-        builder.calculation_parameters = Dict(
-            {
-                "gradients": self.model.workflow_model.gradients,
-                "hessian": self.model.workflow_model.hessian,
-            }
-        )
-        if self.model.workflow_model.vibrational_analysis:
+        # Configure additional SP based tasks
+        if self.model.workflow_model.workflow == WorkflowOptions.NEB:
+            builder.optimisation_parameters = Dict({"neb": "frozen"})
+            if self.model.workflow_model.structure_2.has_file:
+                builder.structure2 = (
+                    self.model.workflow_model.structure_2.structure_file
+                )
+            else:
+                builder.structure2 = self.model.workflow_model.structure_2.structure
+        elif self.model.workflow_model.vibrational_analysis:
             builder.optimisation_parameters = Dict({"thermal": True})
+        else:
+            builder.calculation_parameters = Dict(
+                {
+                    "gradients": self.model.workflow_model.gradients,
+                    "hessian": self.model.workflow_model.hessian,
+                }
+            )
+        # Setup metadata and resource parameters
         if self.model.resource_model.ncpus > 1:
             builder.metadata.options.withmpi = True
         else:
@@ -155,6 +168,7 @@ class ChemShellProcess:
             "num_machines": 1,
             "tot_num_mpiprocs": self.model.resource_model.ncpus,
         }
+        # Submit and apply the label/description to the CalcJob
         self.node = submit(builder)
         self.node.label = self.model.resource_model.process_label
         self.node.description = self.model.resource_model.process_description
