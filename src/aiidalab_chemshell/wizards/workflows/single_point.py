@@ -1,11 +1,11 @@
 """Defines the input widget for the a base single point energy calculation."""
 
 from aiida_chemshell.utils import ChemShellQMTheory
+from alc_aiidalab_widgets.widgets import FileUploadWidget
 from ipywidgets import HTML, Checkbox, Dropdown, HBox, Text, VBox, dlink
 from traitlets import Bool, HasTraits, link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
-from aiidalab_chemshell.common.file_handling import FileUploadWidget
 from aiidalab_chemshell.common.utils import LoadingWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 

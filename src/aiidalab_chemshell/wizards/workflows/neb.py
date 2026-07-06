@@ -1,10 +1,10 @@
 """Defines the input widget for the nudged elastic band workflow."""
 
 from aiida_chemshell.utils import ChemShellQMTheory
+from alc_aiidalab_widgets.widgets import FileUploadWidget
 from ipywidgets import HTML, Checkbox, Dropdown, Text, VBox, dlink, link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
-from aiidalab_chemshell.common.file_handling import FileUploadWidget
 from aiidalab_chemshell.common.structure_uploader import StructureSelectionWidget
 from aiidalab_chemshell.common.utils import LoadingWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel

@@ -6,8 +6,6 @@ from alc_aiidalab_widgets.widgets import FileUploadWidget
 from traitlets import link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
-
-# from aiidalab_chemshell.common.file_handling import FileUploadWidget
 from aiidalab_chemshell.common.utils import LoadingWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
