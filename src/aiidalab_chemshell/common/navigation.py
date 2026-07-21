@@ -35,6 +35,20 @@ class QuickAccessButtons(ipw.HBox):
             )
         )
 
+        self.batch_link = ipw.Button(
+            description="Batch Calculation",
+            disabled=False,
+            button_style="success",
+            tooltip="Run a batch of single point calculations",
+            icon="cubes",
+        )
+        self.batch_link.on_click(
+            partial(
+                open_link_in_new_tab,
+                _APPS_DIRECTORY + "chemshell/notebooks/batch.ipynb",
+            )
+        )
+
         self.history_link = ipw.Button(
             description="History",
             disabled=False,
@@ -76,6 +90,7 @@ class QuickAccessButtons(ipw.HBox):
 
         children = [
             self.new_calc_link,
+            self.batch_link,
             self.history_link,
             self.resource_setup_link,
             self.docs_link,
