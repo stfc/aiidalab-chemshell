@@ -326,6 +326,41 @@ def test_create_chemshell_code_docker_engine():
     assert "Docker" in kwargs["description"]
 
 
+def test_create_chemshell_code_enforces_double_quotes():
+    """Creating a code enables double-quote escaping on the computer."""
+    computer = mock.Mock()
+    computer.get_use_double_quotes.return_value = False
+    code = mock.Mock()
+    with (
+        mock.patch.object(containers, "chemshell_code_exists", return_value=False),
+        mock.patch.object(containers, "get_localhost_computer", return_value=computer),
+        mock.patch("aiida.orm.ContainerizedCode", return_value=code),
+    ):
+        containers.create_chemshell_code()
+    computer.set_use_double_quotes.assert_called_once_with(True)
+
+
+# --- ensure_use_double_quotes ---------------------------------------------
+
+
+def test_ensure_use_double_quotes_sets_when_disabled():
+    """A computer with double quotes disabled is updated and reports a change."""
+    computer = mock.Mock()
+    computer.get_use_double_quotes.return_value = False
+    changed = containers.ensure_use_double_quotes(computer)
+    assert changed is True
+    computer.set_use_double_quotes.assert_called_once_with(True)
+
+
+def test_ensure_use_double_quotes_noop_when_enabled():
+    """A computer that already uses double quotes is left untouched."""
+    computer = mock.Mock()
+    computer.get_use_double_quotes.return_value = True
+    changed = containers.ensure_use_double_quotes(computer)
+    assert changed is False
+    computer.set_use_double_quotes.assert_not_called()
+
+
 # --- chemshell_code_exists ------------------------------------------------
 
 

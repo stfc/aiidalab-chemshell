@@ -391,8 +391,42 @@ def get_localhost_computer():
     computer.store()
     computer.set_minimum_job_poll_interval(0)
     computer.set_default_mpiprocs_per_machine(1)
+    # Required for containerized codes (see ``ensure_use_double_quotes``).
+    computer.set_use_double_quotes(True)
     computer.configure()
     return computer
+
+
+def ensure_use_double_quotes(computer) -> bool:
+    """
+    Ensure ``computer`` escapes command-line arguments with double quotes.
+
+    Containerized codes require this: the ``engine_command`` relies on shell
+    variable expansion (``$PWD`` in the bind-mount arguments), which only happens
+    inside double quotes. With the AiiDA default of single-quote escaping the
+    ``$PWD`` token is passed literally and the bind mount is broken.
+
+    The setting is computer-wide but narrow in reach: it governs the escaping of
+    the engine command, MPI arguments and the ``stdin``/``stdout``/``stderr``
+    file names. Each code's own executable and arguments are escaped by the
+    separate per-code ``use_double_quotes`` attribute, so enabling this does not
+    change how other codes' arguments are quoted.
+
+    Parameters
+    ----------
+    computer : aiida.orm.Computer
+        The computer to check and, if necessary, update.
+
+    Returns
+    -------
+    bool
+        True if the setting was changed (was disabled, now enabled), False if it
+        was already enabled.
+    """
+    if computer.get_use_double_quotes():
+        return False
+    computer.set_use_double_quotes(True)
+    return True
 
 
 def _code_params(engine: str) -> tuple[str, str, str]:
@@ -442,6 +476,9 @@ def create_chemshell_code(engine: str = APPTAINER):
 
     engine_command, image_name, description = _code_params(engine)
     computer = get_localhost_computer()
+    # Containerized codes need double-quote escaping so the engine command's
+    # ``$PWD`` expands; enforce it here so every caller gets a working code.
+    ensure_use_double_quotes(computer)
     code = ContainerizedCode(
         computer=computer,
         engine_command=engine_command,

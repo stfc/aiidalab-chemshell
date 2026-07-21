@@ -118,8 +118,13 @@ class ChemShellContainerSetupWidget(ipw.VBox):
     def _create_code(self, engine: str):
         """Create/reuse the ChemShell code (must run on the main thread)."""
         existed = containers.chemshell_code_exists()
+        # Containerized codes require double-quote escaping on the computer for
+        # the engine command's ``$PWD`` to expand. Enable it if needed (also
+        # covers the code-reuse path) and report whether we changed it.
+        computer = containers.get_localhost_computer()
+        dq_changed = containers.ensure_use_double_quotes(computer)
         code = containers.create_chemshell_code(engine)
-        return existed, code.full_label
+        return existed, code.full_label, dq_changed
 
     def _run_install(self) -> None:
         """Run the full detect/build/create sequence (background thread)."""
@@ -156,18 +161,23 @@ class ChemShellContainerSetupWidget(ipw.VBox):
                     return
 
             self._set_status(f"{self._SPINNER} Creating AiiDA code ...", "working")
-            existed, full_label = self._call_on_loop(lambda: self._create_code(engine))
+            existed, full_label, dq_changed = self._call_on_loop(
+                lambda: self._create_code(engine)
+            )
             if existed:
-                self._set_status(
+                message = (
                     f"Code <code>{full_label}</code> already exists and is "
-                    "ready to use.",
-                    "success",
+                    "ready to use."
                 )
             else:
-                self._set_status(
-                    f"Code <code>{full_label}</code> created successfully.",
-                    "success",
+                message = f"Code <code>{full_label}</code> created successfully."
+            if dq_changed:
+                message += (
+                    " Note: enabled <code>use_double_quotes</code> on the "
+                    f"<code>{containers.COMPUTER_LABEL}</code> computer, which is "
+                    "required for containerized codes."
                 )
+            self._set_status(message, "success")
         except Exception as exc:  # noqa: BLE001 - surface any failure in the UI
             self._set_status(f"Unexpected error: {exc}", "error")
         finally:
