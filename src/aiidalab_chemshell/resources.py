@@ -51,7 +51,7 @@ class CodeSetupWidget(ipw.VBox, HasTraits):
         return
 
 
-class ChemShellContainerSetupWidget(VBox):
+class ChemShellContainerSetupWidget(ipw.VBox):
     """Widget for one-click install of the ChemShell container and AiiDA code."""
 
     _SPINNER = "<i class='fa fa-spinner fa-spin fa-fw'></i>"
