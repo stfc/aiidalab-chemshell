@@ -1,7 +1,7 @@
 """Defines the input widget for the Isolated Atomic Energy workflow."""
 
+import ipywidgets as ipw
 from aiida_chemshell.utils import ChemShellQMTheory
-from ipywidgets import HTML, Checkbox, Dropdown, Text, VBox
 from traitlets import link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
@@ -9,7 +9,7 @@ from aiidalab_chemshell.common.utils import LoadingWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
 
-class IsolatedAtomEnergyWidget(VBox):
+class IsolatedAtomEnergyWidget(ipw.VBox):
     """Widget for selecting ChemShell input options."""
 
     def __init__(self, model: ChemShellWorkflowModel, **kwargs):
@@ -26,7 +26,7 @@ class IsolatedAtomEnergyWidget(VBox):
         super().__init__(**kwargs)
         self.model = model
         self.rendered = False
-        self.header = HTML(
+        self.header = ipw.HTML(
             """
             <h3 style="text-align: center;">Isolated Atomic Energy Calculation</h3>
             <p>
@@ -44,12 +44,12 @@ class IsolatedAtomEnergyWidget(VBox):
             return
         self.rendered = True
 
-        self.advanced_options = Checkbox(
+        self.advanced_options = ipw.Checkbox(
             value=False, description="Show Advanced Options", index=True
         )
         self.advanced_options.observe(self._render_input_options, "value")
 
-        self.basis_dropdown = Dropdown(
+        self.basis_dropdown = ipw.Dropdown(
             options={e.name: e for e in BasisSetOptions},
             description="Basis Quality:",
             disabled=False,
@@ -59,21 +59,21 @@ class IsolatedAtomEnergyWidget(VBox):
         self.basis_dropdown.observe(self._update_basis_set, "value")
         # link((self.model, "basis_quality"), (self.basis_dropdown, "value"))
 
-        self.basis_string = Text(
+        self.basis_string = ipw.Text(
             value="",
             description="Basis Set:",
             disabled=False,
             layout={"width": "50%"},
         )
         link((self.model, "basis_set"), (self.basis_string, "value"))
-        self.backend = Dropdown(
+        self.backend = ipw.Dropdown(
             options={e.name: e for e in ChemShellQMTheory},
             description="QM Backend:",
             disabled=False,
             layout={"width": "50%"},
         )
         link((self.model, "qm_theory"), (self.backend, "value"))
-        self.functional = Text(
+        self.functional = ipw.Text(
             value="B3LYP",
             description="Functional:",
             disabled=False,

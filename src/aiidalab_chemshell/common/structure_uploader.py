@@ -1,17 +1,17 @@
 """Widget for selecting an input structure from various sources."""
 
+import aiidalab_widgets_base as awb
+import ipywidgets as ipw
 from aiida.orm import SinglefileData, StructureData, TrajectoryData
-from aiidalab_widgets_base import SmilesWidget
 from alc_aiidalab_widgets.widgets import (
     AiiDADatabaseQueryWidget,
     FileUploadWidget,
     StructureViewWidget,
 )
-from ipywidgets import HTML, Tab, VBox, dlink
 from traitlets import HasTraits, Instance
 
 
-class StructureSelectionWidget(VBox, HasTraits):
+class StructureSelectionWidget(ipw.VBox, HasTraits):
     """Widget for selecting an input structre from various sources."""
 
     structure_data = Instance(StructureData, allow_none=True)
@@ -32,13 +32,13 @@ class StructureSelectionWidget(VBox, HasTraits):
         super().__init__(**kwargs)
         self.batch = batch
         # upload file
-        self.file_input_widget = VBox()
+        self.file_input_widget = ipw.VBox()
         self.file_uploader = FileUploadWidget(description="Structure file: ")
         self.file_input_widget.children = [
             self.file_uploader,
         ]
         self.file_uploader.observe(self._on_file_upload, "file")
-        dlink((self.file_uploader, "file"), (self, "structure_file"))
+        ipw.dlink((self.file_uploader, "file"), (self, "structure_file"))
 
         # AiiDA database
         self.database_widget = AiiDADatabaseQueryWidget(
@@ -54,16 +54,16 @@ class StructureSelectionWidget(VBox, HasTraits):
             "AiiDA Database": self.database_widget,
         }
         if not self.batch:
-            self.smiles_widget = SmilesWidget(title="SMILES")
+            self.smiles_widget = awb.SmilesWidget(title="SMILES")
             self.smiles_widget.observe(self._on_smiles_generation, "structure")
             tabs_children["SMILES String"] = self.smiles_widget
 
-        self.tabs = Tab()
+        self.tabs = ipw.Tab()
         self.tabs.children = [item for key, item in tabs_children.items()]
         for i, title in enumerate(tabs_children.keys()):
             self.tabs.set_title(i, title)
 
-        self.viewer = HTML("<p>No structure found...</p>")
+        self.viewer = ipw.HTML("<p>No structure found...</p>")
 
         self.children = [self.tabs, self.viewer]
 

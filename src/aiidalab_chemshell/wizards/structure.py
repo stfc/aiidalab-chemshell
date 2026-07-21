@@ -1,13 +1,13 @@
 """Defines the model and view components for the structure setup stage."""
 
+import aiidalab_widgets_base as awb
 import ipywidgets as ipw
-from aiidalab_widgets_base import WizardAppWidgetStep
 
 from aiidalab_chemshell.common.structure_uploader import StructureSelectionWidget
 from aiidalab_chemshell.models.structure import StructureInputModel
 
 
-class StructureWizardStep(ipw.VBox, WizardAppWidgetStep):
+class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
     """
     Wizard for structure selection and manipulation.
 

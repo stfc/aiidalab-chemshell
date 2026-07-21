@@ -2,11 +2,11 @@
 
 from datetime import datetime
 
+import aiidalab_widgets_base as awb
+import ipywidgets as ipw
 from aiida.orm import CalcJobNode, WorkChainNode
-from aiidalab_widgets_base import ProcessNodesTreeWidget
 from alc_aiidalab_widgets.widgets import AiiDADatabaseQueryWidget
 from IPython.display import display
-from ipywidgets import HTML, VBox, dlink
 
 from aiidalab_chemshell.common.navigation import QuickAccessButtons
 from aiidalab_chemshell.common.node_viewers import CustomAiidaNodeViewWidget
@@ -29,7 +29,7 @@ class HistoryModel(ProcessModel):
     pass
 
 
-class HistoryAppView(VBox):
+class HistoryAppView(ipw.VBox):
     """Main view for the process history page."""
 
     def __init__(self, model: HistoryModel, **kwargs):
@@ -42,7 +42,7 @@ class HistoryAppView(VBox):
             The MVC model component to associate with this view app.
         """
         self.model = model
-        logo = HTML(
+        logo = ipw.HTML(
             """
             <div class="app-container logo" style="width: 500px;">
                 <img src="../images/chemshell.png" alt="ChemShell Logo" />
@@ -51,7 +51,7 @@ class HistoryAppView(VBox):
             layout={"margin": "auto"},
         )
 
-        subtitle = HTML(
+        subtitle = ipw.HTML(
             """
             <h2 id='subtitle'>AiiDAlab ChemShell</h2>
             """
@@ -59,7 +59,7 @@ class HistoryAppView(VBox):
 
         nav_btns = QuickAccessButtons()
 
-        header = VBox(
+        header = ipw.VBox(
             children=[
                 logo,
                 subtitle,
@@ -67,7 +67,7 @@ class HistoryAppView(VBox):
             layout={"margin": "auto"},
         )
 
-        footer = HTML(
+        footer = ipw.HTML(
             f"""
             <footer>
                 Copyright (c) {datetime.now().year} Ada Lovelace Centre
@@ -76,9 +76,9 @@ class HistoryAppView(VBox):
             """,
             layout={"align-content": "right"},
         )
-        h_line = HTML("<hr>")
+        h_line = ipw.HTML("<hr>")
 
-        self.guide = HTML(
+        self.guide = ipw.HTML(
             """
             <h3>ChemShell Process History</h3>
             <p>
@@ -92,10 +92,10 @@ class HistoryAppView(VBox):
         )
         self.lookup_widget.observe(self._update_node_view, "data_object")
 
-        self.node_tree = ProcessNodesTreeWidget()
-        dlink((self.model, "process_uuid"), (self.node_tree, "value"))
+        self.node_tree = awb.ProcessNodesTreeWidget()
+        ipw.dlink((self.model, "process_uuid"), (self.node_tree, "value"))
         self.node_view = CustomAiidaNodeViewWidget()
-        dlink(
+        ipw.dlink(
             (self.node_tree, "selected_nodes"),
             (self.node_view, "node"),
             transform=lambda nodes: nodes[0] if nodes else None,

@@ -1,10 +1,10 @@
 """Module for handling AiiDA processes."""
 
+import ipywidgets as ipw
 import traitlets as tl
 from aiida.engine import submit
 from aiida.orm import Dict, load_code
 from aiida.plugins import WorkflowFactory
-from ipywidgets import dlink
 
 from aiidalab_chemshell.common.chemshell import WorkflowOptions
 from aiidalab_chemshell.models.structure import StructureInputModel
@@ -29,7 +29,7 @@ class MainAppModel(tl.HasTraits):
         self.results_model = ResultsModel()
 
         self.resource_model.observe(self._submit_model, "submitted")
-        dlink((self, "block_results"), (self.results_model, "blocked"))
+        ipw.dlink((self, "block_results"), (self.results_model, "blocked"))
 
         self.process = None
 

@@ -1,12 +1,11 @@
 """Defines a resource setup widget based on foundations from aiidalab-widgets-base."""
 
-from aiidalab_widgets_base.computational_resources import ResourceSetupBaseWidget
-from aiidalab_widgets_base.utils import StatusHTML
-from ipywidgets import HTML, Text, VBox, dlink
+import aiidalab_widgets_base as awb
+import ipywidgets as ipw
 from traitlets import HasTraits, Unicode, observe
 
 
-class CodeSetupWidget(VBox, HasTraits):
+class CodeSetupWidget(ipw.VBox, HasTraits):
     """Widget to setup a new code instance."""
 
     _database_source = Unicode(
@@ -15,13 +14,13 @@ class CodeSetupWidget(VBox, HasTraits):
     )
 
     def __init__(self, **kwargs):
-        self.source = Text(
+        self.source = ipw.Text(
             value=self._database_source, description="Source: ", layout={"width": "80%"}
         )
-        dlink((self.source, "value"), (self, "_database_source"))
-        self.resource_widget = ResourceSetupBaseWidget()
-        self.setup_message = StatusHTML(clear_after=15)
-        dlink(
+        ipw.dlink((self.source, "value"), (self, "_database_source"))
+        self.resource_widget = awb.computational_resources.ResourceSetupBaseWidget()
+        self.setup_message = awb.utils.StatusHTML(clear_after=15)
+        ipw.dlink(
             (self.resource_widget, "message"),
             (self.setup_message, "message"),
         )
@@ -29,9 +28,9 @@ class CodeSetupWidget(VBox, HasTraits):
         self.source.value = "https://raw.githubusercontent.com/stfc/alc-ux/refs/heads/main/resources/remotes.json"
 
         children = [
-            HTML("<hr>"),
+            ipw.HTML("<hr>"),
             self.source,
-            HTML("<hr>"),
+            ipw.HTML("<hr>"),
             self.resource_widget,
             self.setup_message,
         ]

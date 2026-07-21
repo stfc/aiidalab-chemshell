@@ -1,13 +1,13 @@
 """Module for defining widgets/models for viewing process progress and results."""
 
+import aiidalab_widgets_base as awb
 import ipywidgets as ipw
-from aiidalab_widgets_base import ProcessNodesTreeWidget, WizardAppWidgetStep
 
 from aiidalab_chemshell.common.node_viewers import CustomAiidaNodeViewWidget
 from aiidalab_chemshell.models.results import ResultsModel
 
 
-class ResultsWizardStep(ipw.VBox, WizardAppWidgetStep):
+class ResultsWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
     """Wizard for viewing process progress and results."""
 
     def __init__(self, model: ResultsModel, **kwargs):
@@ -60,7 +60,7 @@ class ResultsWizardStep(ipw.VBox, WizardAppWidgetStep):
             )
             self.children = [msg]
         else:
-            self.node_tree = ProcessNodesTreeWidget()
+            self.node_tree = awb.ProcessNodesTreeWidget()
             ipw.dlink((self.model, "process_uuid"), (self.node_tree, "value"))
             self.node_view = CustomAiidaNodeViewWidget()
             ipw.dlink(

@@ -1,21 +1,21 @@
 """Small common widgets used accross the application."""
 
-from ipywidgets import HTML, HBox, Label, Layout
+import ipywidgets as ipw
 
 
-class LoadingWidget(HBox):
+class LoadingWidget(ipw.HBox):
     """Widget for displaying a loading spinner."""
 
     def __init__(self, message="Loading", **kwargs):
         super().__init__(
             children=[
-                Label(message),
-                HTML(
+                ipw.Label(message),
+                ipw.HTML(
                     value="<i class='fa fa-spinner fa-spin fa-2x fa-fw'/>",
-                    layout=Layout(margin="12px 0 6px"),
+                    layout=ipw.Layout(margin="12px 0 6px"),
                 ),
             ],
-            layout=Layout(
+            layout=ipw.Layout(
                 justify_content="center",
                 align_items="center",
                 **kwargs.pop("layout", {}),

@@ -1,16 +1,15 @@
 """Defines a custom AiiDA node visualiser."""
 
+import aiidalab_widgets_base as awb
+import ipywidgets as ipw
 from aiida.common.links import LinkType
 from aiida.orm import ArrayData, Node, ProcessNode
-from aiidalab_widgets_base.loaders import LoadingWidget
-from aiidalab_widgets_base.viewers import AIIDA_VIEWER_MAPPING
 from alc_aiidalab_widgets.viewers import ALC_AIIDA_VIEWER_MAPPING
 from IPython.display import clear_output, display
-from ipywidgets import HTML, DOMWidget, Output, VBox
 from traitlets import Instance, observe
 
 
-class CustomAiidaNodeViewWidget(VBox):
+class CustomAiidaNodeViewWidget(ipw.VBox):
     """
     Custom viewer based on a specific AiiDA node type.
 
@@ -26,9 +25,9 @@ class CustomAiidaNodeViewWidget(VBox):
 
     def __init__(self, **kwargs):
         """CustomAiidaNodeViewWidget Constructor."""
-        self._output = Output()
+        self._output = ipw.Output()
         self.node_views = {}
-        self.node_view_loading_message = LoadingWidget("Loading Node View")
+        self.node_view_loading_message = awb.loaders.LoadingWidget("Loading Node View")
         super().__init__(**kwargs)
         self.add_class("aiida-node-view-widget")
 
@@ -41,7 +40,7 @@ class CustomAiidaNodeViewWidget(VBox):
             return
         self.children = [self.node_view_loading_message]
         node_view = self._viewer(node)
-        if isinstance(node_view, DOMWidget):
+        if isinstance(node_view, ipw.DOMWidget):
             self.node_views[node.uuid] = node_view
             self.children = [node_view]
         else:
@@ -57,12 +56,14 @@ class CustomAiidaNodeViewWidget(VBox):
         _viewer = ALC_AIIDA_VIEWER_MAPPING.get(node.node_type)
         if not _viewer:
             # Fall back to default AiiDAlab developed node viewers
-            _viewer = AIIDA_VIEWER_MAPPING.get(node.node_type)
+            _viewer = awb.viewers.AIIDA_VIEWER_MAPPING.get(node.node_type)
         if isinstance(node, ProcessNode):
             # Allow to register specific viewers based on node.process_type
             _viewer = ALC_AIIDA_VIEWER_MAPPING.get(node.process_type, _viewer)  # type: ignore
             if not _viewer:
-                _viewer = AIIDA_VIEWER_MAPPING.get(node.process_type, _viewer)
+                _viewer = awb.viewers.AIIDA_VIEWER_MAPPING.get(
+                    node.process_type, _viewer
+                )
 
         # Handle ChemShell specific output nodes
         incoming_links = node.get_incoming(link_type=LinkType.CREATE).all()
@@ -92,7 +93,7 @@ class CustomAiidaNodeViewWidget(VBox):
         return node
 
 
-class VibrationalModesViewWidget(VBox):
+class VibrationalModesViewWidget(ipw.VBox):
     """Custom widget to display vibrational modes produced from ChemShell."""
 
     def __init__(self, array: ArrayData, **kwargs):
@@ -121,6 +122,6 @@ class VibrationalModesViewWidget(VBox):
             html += "</tr>"
         html += "</table>"
 
-        self.children = [HTML(html)]
+        self.children = [ipw.HTML(html)]
 
         return

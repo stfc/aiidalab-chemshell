@@ -1,8 +1,8 @@
 """Defines the input widget for the a base single point energy calculation."""
 
+import ipywidgets as ipw
 from aiida_chemshell.utils import ChemShellQMTheory
 from alc_aiidalab_widgets.widgets import FileUploadWidget
-from ipywidgets import HTML, Checkbox, Dropdown, HBox, Text, VBox, dlink
 from traitlets import Bool, HasTraits, link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
@@ -10,7 +10,7 @@ from aiidalab_chemshell.common.utils import LoadingWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
 
-class SinglePointCalcWidget(VBox):
+class SinglePointCalcWidget(ipw.VBox):
     """Widget for specifying ChemShell SP calculation inputs."""
 
     def __init__(self, model: ChemShellWorkflowModel, **kwargs):
@@ -27,7 +27,7 @@ class SinglePointCalcWidget(VBox):
         super().__init__(**kwargs)
         self.model = model
         self.rendered = False
-        self.header = HTML(
+        self.header = ipw.HTML(
             """
             <h3 style="text-align: center;">Single Point Energy Calculation</h3>
             <p>
@@ -47,12 +47,12 @@ class SinglePointCalcWidget(VBox):
             return
         self.rendered = True
 
-        self.advanced_options = Checkbox(
+        self.advanced_options = ipw.Checkbox(
             value=False, description="Show Advanced Options", index=True
         )
         self.advanced_options.observe(self._render_input_options, "value")
 
-        self.basis_dropdown = Dropdown(
+        self.basis_dropdown = ipw.Dropdown(
             options={e.name: e for e in BasisSetOptions},
             description="Basis Quality:",
             disabled=False,
@@ -61,21 +61,21 @@ class SinglePointCalcWidget(VBox):
         self.basis_dropdown.observe(self._update_basis_set, "value")
         self.basis_dropdown.index = 1
 
-        self.basis_string = Text(
+        self.basis_string = ipw.Text(
             value="",
             description="Basis Set:",
             disabled=False,
             layout={"width": "50%"},
         )
         link((self.model, "basis_set"), (self.basis_string, "value"))
-        self.backend = Dropdown(
+        self.backend = ipw.Dropdown(
             options={e.name: e for e in ChemShellQMTheory},
             description="QM Backend:",
             disabled=False,
             layout={"width": "50%"},
         )
         link((self.model, "qm_theory"), (self.backend, "value"))
-        self.functional = Text(
+        self.functional = ipw.Text(
             value="B3LYP",
             description="Functional:",
             disabled=False,
@@ -85,14 +85,16 @@ class SinglePointCalcWidget(VBox):
 
         self.derivatives = DerivativeOptions(self.model)
 
-        self.enable_vib = Checkbox(
+        self.enable_vib = ipw.Checkbox(
             value=False, description="Vibrational Frequencies", index=True
         )
-        dlink((self.enable_vib, "value"), (self.model, "vibrational_analysis"))
+        ipw.dlink((self.enable_vib, "value"), (self.model, "vibrational_analysis"))
 
-        self.enable_mm_chk = Checkbox(value=False, description="Use QM/MM", indent=True)
+        self.enable_mm_chk = ipw.Checkbox(
+            value=False, description="Use QM/MM", indent=True
+        )
         self.enable_mm_chk.observe(self._enable_mm_options, "value")
-        dlink((self.enable_mm_chk, "value"), (self.model, "use_mm"))
+        ipw.dlink((self.enable_mm_chk, "value"), (self.model, "use_mm"))
 
         # MM Backend
         # self.mm_theory_dropdown = ipw.Dropdown(
@@ -103,7 +105,7 @@ class SinglePointCalcWidget(VBox):
         # )
 
         # QM region for QM/MM calculation
-        self.qm_region_text = Text(
+        self.qm_region_text = ipw.Text(
             value="",
             description="QM Region:",
             disabled=False,
@@ -179,7 +181,7 @@ class SinglePointCalcWidget(VBox):
         return
 
 
-class DerivativeOptions(HBox, HasTraits):
+class DerivativeOptions(ipw.HBox, HasTraits):
     """Inline derivative checkboxes."""
 
     disabled = Bool(False).tag(sync=True)
@@ -197,11 +199,11 @@ class DerivativeOptions(HBox, HasTraits):
         """
         super().__init__(**kwargs)
         self.model = model
-        self.label = HTML(
+        self.label = ipw.HTML(
             "<p>Energy Derivatives: </p>",
         )
-        self.first = Checkbox(value=True, description="First Derivative")
-        self.second = Checkbox(value=False, description="Second Derivative")
+        self.first = ipw.Checkbox(value=True, description="First Derivative")
+        self.second = ipw.Checkbox(value=False, description="Second Derivative")
         link((self.first, "value"), (self.model, "gradients"))
         link((self.second, "value"), (self.model, "hessian"))
 
