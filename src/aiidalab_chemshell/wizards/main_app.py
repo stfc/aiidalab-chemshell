@@ -1,37 +1,57 @@
-"""Defines the wizard widget for the main AiiDAlab ChemShell application."""
+"""Defines the core wizard widgets for the AiiDAlab ChemShell application pages."""
 
 import aiidalab_widgets_base as awb
 import ipywidgets as ipw
 
-from aiidalab_chemshell.process import MainAppModel
+from aiidalab_chemshell.process import BaseAppModel
 from aiidalab_chemshell.wizards.resources import (
     ComputationalResourcesWizardStep,
 )
 from aiidalab_chemshell.wizards.results import ResultsWizardStep
 from aiidalab_chemshell.wizards.structure import StructureWizardStep
-from aiidalab_chemshell.wizards.workflows import WorkflowWizardStep
+from aiidalab_chemshell.wizards.workflows import (
+    BatchWorkflowWizardStep,
+    WorkflowWizardStep,
+)
 
 
-class MainAppWizardWidget(ipw.VBox):
-    """An ipywidgets based widget to hold the main application construct wizard."""
+class BaseWizardWidget(ipw.VBox):
+    """
+    The shared application construction wizard.
 
-    def __init__(self, model: MainAppModel, **kwargs):
+    A single wizard widget backing both the "New Calculation" and "Batch
+    Processing" pages.
+    """
+
+    def __init__(self, model: BaseAppModel, batch: bool = False, **kwargs):
         """
-        WizardWidget constructor.
+        BaseWizardWidget constructor.
 
         Parameters
         ----------
+        model : BaseAppModel
+            The application model backing the wizard.
+        batch : bool
+            If True, build the batch processing wizard; otherwise build the
+            main "New Calculation" wizard.
         **kwargs :
             Keyword arguments passed to the `ipywidgets.VBox.__init__()`.
         """
-        self.structureStep = StructureWizardStep(model.structure_model)
-        self.workflowStep = WorkflowWizardStep(model.workflow_model)
+        if batch:
+            self.structureStep = StructureWizardStep(model.structure_model, batch=True)
+            self.workflowStep = BatchWorkflowWizardStep(model.workflow_model)
+            structure_title = "Select Structures Input"
+        else:
+            self.structureStep = StructureWizardStep(model.structure_model)
+            self.workflowStep = WorkflowWizardStep(model.workflow_model)
+            structure_title = "Select Structure"
+
         self.compResourceStep = ComputationalResourcesWizardStep(model.resource_model)
         self.results_step = ResultsWizardStep(model.results_model)
 
         self._wizard_app_widget = awb.WizardAppWidget(
             steps=[
-                ("Select Structure", self.structureStep),
+                (structure_title, self.structureStep),
                 ("Configure Workflow", self.workflowStep),
                 ("Configure Computational Resources", self.compResourceStep),
                 ("Results", self.results_step),
@@ -68,3 +88,19 @@ class MainAppWizardWidget(ipw.VBox):
             step = self.steps[step_index][1]
             step.render()
         return
+
+
+class MainWizardWidget(BaseWizardWidget):
+    """The main "New Calculation" application construction wizard."""
+
+    def __init__(self, model: BaseAppModel, **kwargs):
+        """MainWizardWidget constructor."""
+        super().__init__(model, batch=False, **kwargs)
+
+
+class BatchWizardWidget(BaseWizardWidget):
+    """The batch processing application construction wizard."""
+
+    def __init__(self, model: BaseAppModel, **kwargs):
+        """BatchWizardWidget constructor."""
+        super().__init__(model, batch=True, **kwargs)

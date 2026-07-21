@@ -1,5 +1,8 @@
 """Module to define different view components for ChemShell workflow configuration."""
 
-from aiidalab_chemshell.wizards.workflows.main_view import WorkflowWizardStep
+from aiidalab_chemshell.wizards.workflows.main_view import (
+    BatchWorkflowWizardStep,
+    WorkflowWizardStep,
+)
 
-__all__ = ["WorkflowWizardStep"]
+__all__ = ["WorkflowWizardStep", "BatchWorkflowWizardStep"]
