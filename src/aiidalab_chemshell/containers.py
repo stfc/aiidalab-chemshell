@@ -229,6 +229,7 @@ def create_chemshell_code():
         image_name=str(sif_path()),
         filepath_executable=FILEPATH_EXECUTABLE,
         label=CODE_LABEL,
+        description="ChemShell v25 (Apptainer)",
         default_calc_job_plugin=DEFAULT_CALC_JOB_PLUGIN,
         with_mpi=WITH_MPI,
         prepend_text=PREPEND_TEXT,
