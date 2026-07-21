@@ -15,16 +15,35 @@ from aiidalab_chemshell.wizards.results import ResultsModel
 GeometryOptimisationWorkflow = WorkflowFactory("chemshell.opt")
 
 
-class MainAppModel(tl.HasTraits):
-    """The main AiiDAlab application MVC model."""
+class BaseAppModel(tl.HasTraits):
+    """
+    The shared AiiDAlab application MVC model.
+
+    A single model backing both the "New Calculation" and "Batch Processing"
+    pages. The ``batch`` flag selects the process class used on submission and
+    constrains the batch page to single point energy calculations, while the
+    composed sub-models and submission wiring remain identical.
+    """
 
     block_results = tl.Bool(True, allow_none=False)
 
-    def __init__(self):
-        """MainAppModel constructor."""
+    def __init__(self, batch: bool = False):
+        """
+        AppModel constructor.
+
+        Parameters
+        ----------
+        batch : bool
+            If True, configure the model for batch processing; otherwise
+            configure it for a single "New Calculation" workflow.
+        """
         super().__init__()
+        self.batch = batch
         self.structure_model = StructureInputModel()
         self.workflow_model = ChemShellWorkflowModel()
+        if self.batch:
+            # The batch page only runs single point energy calculations.
+            self.workflow_model.workflow = WorkflowOptions.SINGLE_POINT
         self.resource_model = ComputationalResourcesModel()
         self.results_model = ResultsModel()
 
@@ -51,41 +70,65 @@ class MainAppModel(tl.HasTraits):
         self.submitted = False
 
 
+class MainAppModel(BaseAppModel):
+    """The main "New Calculation" AiiDAlab application MVC model."""
+
+    def __init__(self):
+        """MainAppModel constructor."""
+        super().__init__(batch=False)
+
+
+class BatchAppModel(BaseAppModel):
+    """The batch processing AiiDAlab application MVC model."""
+
+    def __init__(self):
+        """BatchAppModel constructor."""
+        super().__init__(batch=True)
+
+
 class ChemShellProcess:
     """Class to handle a ChemShell AiiDA process."""
 
-    def __init__(self, model: MainAppModel):
+    def __init__(self, model: BaseAppModel):
         """
         ChemShellProcess constructor.
 
         Parameters
         ----------
-        model : MainAppModel
-            The main application model containing all necessary data.
+        model : AppModel
+            The application model containing all necessary data.
         """
         self.model = model
         self.node = None
         return
 
     @classmethod
-    def validate_model(cls, model: MainAppModel) -> bool:
+    def validate_model(cls, model: BaseAppModel) -> bool:
         """
         Validate the main application model.
 
         Parameters
         ----------
-        model : MainAppModel
-            The main application model to validate.
+        model : AppModel
+            The application model to validate.
 
         Returns
         -------
         bool
             True if the model is valid, False otherwise.
         """
-        if not model.structure_model.has_structure:
-            if not model.structure_model.has_file:
-                print("No structure provided.")
+        if model.batch:
+            if (
+                not model.structure_model.has_trajectory
+                and not model.structure_model.has_file
+            ):
+                print("No batch input (trajectory or structure file) provided.")
                 return False
+        else:
+            if not model.structure_model.has_structure:
+                if not model.structure_model.has_file:
+                    print("No structure provided.")
+                    return False
         if model.workflow_model.use_mm:
             if not model.workflow_model.force_field:
                 print("No force field provided.")
@@ -98,13 +141,16 @@ class ChemShellProcess:
 
     def submit_process(self):
         """Submit the AiiDA process."""
-        match self.model.workflow_model.workflow:
-            case WorkflowOptions.GEOMETRY:
-                self._submit_optimisation_workflow()
-            case WorkflowOptions.ATOMIC_ENERGIES:
-                self._submit_atomic_energies_workflow()
-            case _:
-                self._submit_core_calcjob()
+        if self.model.batch:
+            self._submit_batch_workflow()
+        else:
+            match self.model.workflow_model.workflow:
+                case WorkflowOptions.GEOMETRY:
+                    self._submit_optimisation_workflow()
+                case WorkflowOptions.ATOMIC_ENERGIES:
+                    self._submit_atomic_energies_workflow()
+                case _:
+                    self._submit_core_calcjob()
         return
 
     def _submit_core_calcjob(self) -> None:
@@ -230,6 +276,63 @@ class ChemShellProcess:
                 "basis": self.model.workflow_model.basis_set,
             }
         )
+        self.node = submit(builder)
+        self.node.label = self.model.resource_model.process_label
+        self.node.description = self.model.resource_model.process_description
+        return
+
+    def _submit_batch_workflow(self) -> None:
+        """Build and submit the batch processing WorkChain."""
+        from aiida_chemshell.workflows.batch_calculation import BatchProcessWorkChain
+        # TODO: Register BatchProcessWorkChain as aiida entrypoint
+
+        builder = BatchProcessWorkChain.get_builder()
+        builder.code = load_code(self.model.resource_model.code_label)
+
+        # Shared QM theory parameters applied to every item in the batch.
+        builder.qm_parameters = Dict(
+            {
+                "theory": self.model.workflow_model.qm_theory.name,
+                "method": "dft" if self.model.workflow_model.use_dft else "hf",
+                "functional": self.model.workflow_model.functional,
+                "basis": self.model.workflow_model.basis_set,
+            }
+        )
+        # Optional QM/MM configuration.
+        if self.model.workflow_model.use_mm:
+            builder.mm_parameters = Dict(
+                {
+                    "theory": self.model.workflow_model.mm_theory,
+                }
+            )
+            builder.force_field_file = self.model.workflow_model.force_field
+            builder.qmmm_parameters = Dict(
+                {
+                    "qm_region": ChemShellProcess._extract_qm_region(
+                        self.model.workflow_model.qm_region
+                    ),
+                }
+            )
+        # Energy derivative requests.
+        builder.calculation_parameters = Dict(
+            {
+                "gradients": self.model.workflow_model.gradients,
+                "hessian": self.model.workflow_model.hessian,
+            }
+        )
+
+        # Route the batch input to the appropriate WorkChain port.
+        if self.model.structure_model.has_trajectory:
+            builder.trajectory = self.model.structure_model.trajectory
+        else:
+            structure_file = self.model.structure_model.structure_file
+            builder.structure_files = {"input_file": structure_file}
+
+        # NOTE: BatchProcessWorkChain does not expose the per-calculation
+        # ``metadata`` port, so the resource count from the resource step cannot
+        # currently be plumbed through; sub-calculations use the
+        # ChemShellCalculation default resources.
+
         self.node = submit(builder)
         self.node.label = self.model.resource_model.process_label
         self.node.description = self.model.resource_model.process_description
