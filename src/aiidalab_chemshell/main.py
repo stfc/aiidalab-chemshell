@@ -32,7 +32,7 @@ class App:
         if batch:
             self.model = BatchAppModel()
             wizard = BatchWizardWidget(self.model)
-            subtitle = "ChemShell Batch Processing"
+            subtitle = "ChemShell Batch Processing Workflow"
         else:
             self.model = MainAppModel()
             wizard = MainWizardWidget(self.model)
@@ -85,7 +85,7 @@ class AppView(ipw.VBox):
 
         subtitle_widget = ipw.HTML(
             f"""
-            <h2 id='subtitle'>{subtitle}</h2>
+            <h2 id='subtitle' style="text-align: center;">{subtitle}</h2>
             """
         )
 
@@ -96,7 +96,7 @@ class AppView(ipw.VBox):
                 logo,
                 subtitle_widget,
             ],
-            layout={"margin": "auto"},
+            layout={"margin": "auto", "align_items": "center"},
         )
 
         footer = ipw.HTML(

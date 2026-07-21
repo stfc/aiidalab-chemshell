@@ -51,18 +51,18 @@ class HistoryAppView(ipw.VBox):
             layout={"margin": "auto"},
         )
 
-        subtitle = ipw.HTML(
-            """
-            <h2 id='subtitle'>AiiDAlab ChemShell</h2>
-            """
-        )
+        # subtitle = ipw.HTML(
+        #     """
+        #     <h2 id='subtitle' style="text-align: center;">AiiDAlab ChemShell</h2>
+        #     """
+        # )
 
         nav_btns = QuickAccessButtons()
 
         header = ipw.VBox(
             children=[
                 logo,
-                subtitle,
+                # subtitle,
             ],
             layout={"margin": "auto"},
         )
