@@ -128,3 +128,60 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         self.model.workflow = WorkflowOptions(self.workflow_tabs.selected_index)
         self.workflow_tabs.children[self.workflow_tabs.selected_index].render()
         return
+
+
+class BatchWorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
+    """
+    Wizard step for configuring the single point energy options for a batch.
+
+    Reuses the standard :class:`SinglePointCalcWidget` (the same widget used on
+    the main calculation page) so that every item in the batch is run with an
+    identical single point energy configuration.
+    """
+
+    def __init__(self, model: ChemShellWorkflowModel, **kwargs):
+        """
+        BatchWorkflowWizardStep constructor.
+
+        Parameters
+        ----------
+        model : ChemShellWorkflowModel
+            The model that defines the single point workflow configuration.
+        **kwargs :
+            Keyword arguments passed to the parent class's constructor.
+        """
+        super().__init__(children=[], **kwargs)
+        self.model = model
+        self.rendered = False
+        return
+
+    def render(self):
+        """Render the wizard contents if not already rendered."""
+        if self.rendered:
+            return
+        self.options = SinglePointCalcWidget(self.model)
+
+        self.submit_btn = ipw.Button(
+            description="Submit Options",
+            disabled=False,
+            button_style="success",
+            tooltip="Submit the workflow configuration",
+            icon="check",
+            layout={"margin": "auto", "width": "60%"},
+        )
+        self.submit_btn.on_click(self._submit)
+
+        self.children = [self.options, self.submit_btn]
+        self.rendered = True
+        self.options.render()
+        return
+
+    def _submit(self, _):
+        """Store and lock in the single point configuration."""
+        if self.model.use_mm and not self.model.force_field:
+            print("ERROR: No force field file found...")
+            return
+        self.options.disable(True)
+        self.submit_btn.description = "Submitted"
+        self.submit_btn.disabled = True
+        return
