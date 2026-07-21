@@ -47,6 +47,99 @@ def test_check_apptainer_broken():
     assert "boom" in message
 
 
+# --- check_docker ---------------------------------------------------------
+
+
+def test_check_docker_available():
+    """Docker present with a reachable daemon reports ok."""
+    with mock.patch.object(
+        containers.subprocess,
+        "run",
+        return_value=_completed(stdout="24.0.7"),
+    ):
+        ok, message = containers.check_docker()
+    assert ok is True
+    assert "24.0.7" in message
+
+
+def test_check_docker_missing():
+    """A missing Docker binary is reported as unavailable."""
+    with mock.patch.object(containers.subprocess, "run", side_effect=FileNotFoundError):
+        ok, message = containers.check_docker()
+    assert ok is False
+    assert "not found" in message.lower()
+
+
+def test_check_docker_daemon_down():
+    """Docker present but the daemon unreachable is reported as an error."""
+    with mock.patch.object(
+        containers.subprocess,
+        "run",
+        return_value=_completed(returncode=1, stderr="Cannot connect to the daemon"),
+    ):
+        ok, message = containers.check_docker()
+    assert ok is False
+    assert "daemon" in message.lower()
+
+
+def test_check_docker_uses_server_version_command():
+    """The availability check queries the Docker server version."""
+    with mock.patch.object(
+        containers.subprocess, "run", return_value=_completed(stdout="v")
+    ) as run:
+        containers.check_docker()
+    args = run.call_args.args[0]
+    assert args[:2] == ["docker", "version"]
+    assert "{{.Server.Version}}" in args
+    assert run.call_args.kwargs.get("check") is False
+
+
+# --- detect_engine --------------------------------------------------------
+
+
+def test_detect_engine_prefers_apptainer():
+    """Apptainer is chosen when available, without checking Docker."""
+    with (
+        mock.patch.object(
+            containers, "check_apptainer", return_value=(True, "apptainer 1.3.0")
+        ),
+        mock.patch.object(containers, "check_docker") as check_docker,
+    ):
+        engine, message = containers.detect_engine()
+    assert engine == containers.APPTAINER
+    assert "1.3.0" in message
+    check_docker.assert_not_called()
+
+
+def test_detect_engine_falls_back_to_docker():
+    """Docker is chosen when Apptainer is unavailable."""
+    with (
+        mock.patch.object(
+            containers, "check_apptainer", return_value=(False, "no apptainer")
+        ),
+        mock.patch.object(containers, "check_docker", return_value=(True, "24.0.7")),
+    ):
+        engine, message = containers.detect_engine()
+    assert engine == containers.DOCKER
+    assert "24.0.7" in message
+
+
+def test_detect_engine_none_available():
+    """When neither engine is present, None is returned with both reasons."""
+    with (
+        mock.patch.object(
+            containers, "check_apptainer", return_value=(False, "no apptainer")
+        ),
+        mock.patch.object(
+            containers, "check_docker", return_value=(False, "no docker")
+        ),
+    ):
+        engine, message = containers.detect_engine()
+    assert engine is None
+    assert "no apptainer" in message
+    assert "no docker" in message
+
+
 # --- build_sif ------------------------------------------------------------
 
 
@@ -81,6 +174,93 @@ def test_build_sif_failure(tmp_path):
         ok, message = containers.build_sif()
     assert ok is False
     assert "registry unreachable" in message
+
+
+# --- docker image helpers -------------------------------------------------
+
+
+def test_docker_image_exists_true():
+    """A zero return code from ``docker image inspect`` means present."""
+    with mock.patch.object(
+        containers.subprocess, "run", return_value=_completed()
+    ) as run:
+        assert containers.docker_image_exists() is True
+    args = run.call_args.args[0]
+    assert args[:3] == ["docker", "image", "inspect"]
+    assert args[-1] == containers.DOCKER_IMAGE
+
+
+def test_docker_image_exists_false_when_absent():
+    """A non-zero return code means the image is not present."""
+    with mock.patch.object(
+        containers.subprocess, "run", return_value=_completed(returncode=1)
+    ):
+        assert containers.docker_image_exists() is False
+
+
+def test_docker_image_exists_false_when_missing_binary():
+    """A missing Docker binary reports the image as absent."""
+    with mock.patch.object(containers.subprocess, "run", side_effect=FileNotFoundError):
+        assert containers.docker_image_exists() is False
+
+
+def test_pull_docker_image_success():
+    """A successful pull returns ok and reports progress."""
+    progress = []
+    with mock.patch.object(
+        containers.subprocess, "run", return_value=_completed()
+    ) as run:
+        ok, message = containers.pull_docker_image(on_progress=progress.append)
+    assert ok is True
+    assert progress
+    args = run.call_args.args[0]
+    assert args[:2] == ["docker", "pull"]
+    assert args[-1] == containers.DOCKER_IMAGE
+
+
+def test_pull_docker_image_failure():
+    """A failing pull surfaces the captured error output."""
+    with mock.patch.object(
+        containers.subprocess,
+        "run",
+        return_value=_completed(returncode=1, stderr="manifest unknown"),
+    ):
+        ok, message = containers.pull_docker_image()
+    assert ok is False
+    assert "manifest unknown" in message
+
+
+# --- engine-agnostic routers ----------------------------------------------
+
+
+def test_image_exists_routes_by_engine():
+    """image_exists dispatches to the sif / docker checks per engine."""
+    with (
+        mock.patch.object(containers, "sif_exists", return_value=True) as sif,
+        mock.patch.object(
+            containers, "docker_image_exists", return_value=False
+        ) as docker,
+    ):
+        assert containers.image_exists(containers.APPTAINER) is True
+        assert containers.image_exists(containers.DOCKER) is False
+    sif.assert_called_once()
+    docker.assert_called_once()
+
+
+def test_build_image_routes_by_engine():
+    """build_image dispatches to build_sif / pull_docker_image per engine."""
+    with (
+        mock.patch.object(
+            containers, "build_sif", return_value=(True, "sif")
+        ) as build_sif,
+        mock.patch.object(
+            containers, "pull_docker_image", return_value=(True, "docker")
+        ) as pull,
+    ):
+        assert containers.build_image(containers.APPTAINER) == (True, "sif")
+        assert containers.build_image(containers.DOCKER) == (True, "docker")
+    build_sif.assert_called_once()
+    pull.assert_called_once()
 
 
 # --- create_chemshell_code ------------------------------------------------
@@ -119,12 +299,31 @@ def test_create_chemshell_code_creates_new():
 
     kwargs = containerized.call_args.kwargs
     assert kwargs["computer"] is computer
-    assert kwargs["engine_command"] == containers.ENGINE_COMMAND
+    assert kwargs["engine_command"] == containers.APPTAINER_ENGINE_COMMAND
     assert "{image_name}" in kwargs["engine_command"]
     assert kwargs["image_name"] == str(containers.sif_path())
     assert kwargs["filepath_executable"] == containers.FILEPATH_EXECUTABLE
     assert kwargs["label"] == containers.CODE_LABEL
     assert kwargs["default_calc_job_plugin"] == containers.DEFAULT_CALC_JOB_PLUGIN
+
+
+def test_create_chemshell_code_docker_engine():
+    """Requesting the Docker engine builds a code with the docker settings."""
+    computer = mock.Mock()
+    code = mock.Mock()
+    with (
+        mock.patch.object(containers, "chemshell_code_exists", return_value=False),
+        mock.patch.object(containers, "get_localhost_computer", return_value=computer),
+        mock.patch("aiida.orm.ContainerizedCode", return_value=code) as containerized,
+    ):
+        result = containers.create_chemshell_code(engine=containers.DOCKER)
+
+    assert result is code
+    kwargs = containerized.call_args.kwargs
+    assert kwargs["engine_command"] == containers.DOCKER_ENGINE_COMMAND
+    assert "{image_name}" in kwargs["engine_command"]
+    assert kwargs["image_name"] == containers.DOCKER_IMAGE
+    assert "Docker" in kwargs["description"]
 
 
 # --- chemshell_code_exists ------------------------------------------------

@@ -60,7 +60,9 @@ class ChemShellContainerSetupWidget(ipw.VBox):
         self.install_btn = ipw.Button(
             description="Install ChemShell Container & Create Code",
             button_style="success",
-            tooltip="Check Apptainer, build the image and create the AiiDA code",
+            tooltip=(
+                "Detect Apptainer or Docker, build the image and create the AiiDA code"
+            ),
             icon="download",
             layout={"width": "auto"},
         )
@@ -113,25 +115,28 @@ class ChemShellContainerSetupWidget(ipw.VBox):
         self._loop.call_soon_threadsafe(_wrapper)
         return future.result()
 
-    def _create_code(self):
+    def _create_code(self, engine: str):
         """Create/reuse the ChemShell code (must run on the main thread)."""
         existed = containers.chemshell_code_exists()
-        code = containers.create_chemshell_code()
+        code = containers.create_chemshell_code(engine)
         return existed, code.full_label
 
     def _run_install(self) -> None:
-        """Run the full check/build/create sequence (background thread)."""
+        """Run the full detect/build/create sequence (background thread)."""
         try:
-            self._set_status(f"{self._SPINNER} Checking Apptainer ...", "working")
-            ok, message = containers.check_apptainer()
-            if not ok:
+            self._set_status(
+                f"{self._SPINNER} Checking for a container engine ...", "working"
+            )
+            engine, message = containers.detect_engine()
+            if engine is None:
                 self._set_status(message, "error")
                 return
 
-            if containers.sif_exists():
+            self._set_status(f"Using {engine} ({message}).", "info")
+
+            if containers.image_exists(engine):
                 self._set_status(
-                    f"Existing container image found at "
-                    f"<code>{containers.sif_path()}</code>.",
+                    "Existing container image found; reusing it.",
                     "info",
                 )
             else:
@@ -140,17 +145,18 @@ class ChemShellContainerSetupWidget(ipw.VBox):
                     "(this can take several minutes) ...",
                     "working",
                 )
-                ok, message = containers.build_sif(
+                ok, message = containers.build_image(
+                    engine,
                     on_progress=lambda msg: self._set_status(
                         f"{self._SPINNER} {msg}", "working"
-                    )
+                    ),
                 )
                 if not ok:
                     self._set_status(message, "error")
                     return
 
             self._set_status(f"{self._SPINNER} Creating AiiDA code ...", "working")
-            existed, full_label = self._call_on_loop(self._create_code)
+            existed, full_label = self._call_on_loop(lambda: self._create_code(engine))
             if existed:
                 self._set_status(
                     f"Code <code>{full_label}</code> already exists and is "
