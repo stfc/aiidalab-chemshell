@@ -43,7 +43,7 @@ class StructureSelectionWidget(ipw.VBox, HasTraits):
         # AiiDA database
         self.database_widget = AiiDADatabaseQueryWidget(
             title="AiiDA Database",
-            query=[SinglefileData, StructureData, TrajectoryData]
+            query=[SinglefileData, TrajectoryData]
             if batch
             else [SinglefileData, StructureData],
         )
