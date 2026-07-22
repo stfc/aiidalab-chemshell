@@ -110,11 +110,12 @@ in the workflow wizard.
 .. note::
 
     If no suitable recipe exists for your computer/code combination in any available
-    database, use the :ref:`Manual Setup <resource_management>` instead by ticking the
+    database, use the :ref:`Manual Setup <_resource_manual_setup>` instead by ticking the
     *Tick checkbox to setup resource step by step* option described below or get in touch
     with your chosen registry maintainers e.g. 
     `Ada Lovelace Centre <https://github.com/stfc/alc-ux>` for STFC managed resources.
 
+.. _resource_manual_setup:
 
 Manual Setup
 ------------
