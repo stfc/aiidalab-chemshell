@@ -14,8 +14,106 @@ bottom of the page including a search bar to search for a specific codes and the
 hide certain codes from the AiiDAlab interface. The rest of this page is dedicated to 
 configuring new *computer* and *code* instances.
 
+Quick Install ChemShell Container
+---------------------------------
+
+For users running AiiDAlab on their local machine, the top of the resource setup
+page provides a one-click **Install ChemShell Container & Create Code** button. This
+downloads the pre-built ChemShell container image and creates a ready-to-use
+``chemsh@localhost`` *code* instance, removing the need to manually configure a
+*computer* and *code* for local ChemShell runs. It is the quickest way to get up and
+running when using one of the base AiiDAlab images that does not already bundle a full
+ChemShell installation (see :ref:`getting_started`).
+
+.. note::
+
+    This feature requires either the `Apptainer <https://apptainer.org/>`_ **or**
+    `Docker <https://www.docker.com/>`_ container engine to be available on the local
+    machine. Apptainer is preferred and Docker is used automatically as a fallback when
+    Apptainer is not available.
+
+Clicking the button runs the following steps automatically, reporting progress in the
+status area beneath it:
+
+1. **Detect a container engine.** Apptainer is checked first; if it is not present the
+   Docker engine is used instead. Docker is only considered available if its daemon is
+   actually reachable, so a stopped Docker service is reported as unavailable rather than
+   failing later during the build.
+2. **Acquire the container image.** If the ChemShell image is already present locally it
+   is reused, otherwise it is pulled from the GitHub container registry
+   (``ghcr.io/stfc/aiidalab-chemshell/chemsh:latest``). With Apptainer this produces a
+   local ``.sif`` file; with Docker the image is stored in the local daemon's image
+   store. Building the image can take several minutes on the first run.
+3. **Create the AiiDA code.** A containerised ``chemsh@localhost`` *code* is created
+   pointing at the ChemShell executable inside the image. If a ChemShell code already
+   exists it is reused rather than recreated.
+
+Once the process completes successfully the code becomes available for selection in the
+workflow wizard just like any manually configured code.
+
+.. note::
+
+    Containerised codes require the ``use double quotes to escape...`` option to be
+    enabled on the host *computer* so that the ``$PWD`` reference in the container engine
+    command is expanded correctly. The installer enables this setting automatically on
+    the ``localhost`` computer if it is not already set, and reports in the status
+    message when it has done so. See :ref:`resource_management` for the equivalent manual
+    option.
+
 Quick Setup
 -----------
+
+The *Create New Code* section provides a **Quick setup** utility for configuring
+*code* instances on remote machines without having to enter every field by hand.
+Rather than describing a computer and code from scratch, the quick setup reads a set of
+pre-defined *recipes* from a database file and lets you pick a ready-made
+combination.
+
+Resource Database Source
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The recipes are loaded from the JSON database referenced in the **Source** field at the
+top of the section. By default this points at an STFC maintained
+database of resources, providing quick access to codes on STFC managed computers such as
+SCARF:
+
+.. code:: text
+
+    https://raw.githubusercontent.com/stfc/alc-ux/refs/heads/main/resources/remotes.json
+
+To use a different collection of recipes simply edit the URL in the **Source** field to
+point at your chosen JSON database. An example would the the default AiiDA resource 
+registry database which can be found at:
+
+.. code:: text 
+
+    https://aiidateam.github.io/aiida-resource-registry/database.json
+
+
+Configuring a Code
+~~~~~~~~~~~~~~~~~~
+
+Once a source is selected, configure a new code using the following steps:
+
+1. **Select the domain** of your remote machine.
+2. **Select the computer recipe** for the target machine.
+3. **Select the code recipe** for the software you wish to run.
+4. **Complete the remaining fields**. The fields presented here depend on the combination
+   chosen in steps 1-3 and typically cover account-specific details such as your remote
+   username.
+5. Click **Quick setup**.
+
+This will automatically run the computer and code setup steps on the background for 
+the given pre-configured recipe. The new code will then be available for selection
+in the workflow wizard.
+
+.. note::
+
+    If no suitable recipe exists for your computer/code combination in any available
+    database, use the :ref:`Manual Setup <resource_management>` instead by ticking the
+    *Tick checkbox to setup resource step by step* option described below or get in touch
+    with your chosen registry maintainers e.g. 
+    `Ada Lovelace Centre <https://github.com/stfc/alc-ux>` for STFC managed resources.
 
 
 Manual Setup
