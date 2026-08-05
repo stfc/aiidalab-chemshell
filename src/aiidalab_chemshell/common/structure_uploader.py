@@ -83,8 +83,8 @@ class StructureSelectionWidget(ipw.VBox, HasTraits):
     def _on_smiles_generation(self, change: dict) -> None:
         """When SMILES string is inputted."""
         if change["new"] != change["old"]:
-            self.structure = StructureData(ase=change["new"])
-            self.viewer = StructureViewWidget(self.structure)
+            self.structure_data = StructureData(ase=change["new"])
+            self.viewer = StructureViewWidget(self.structure_data)
             self._update_children()
             if self.structure_file:
                 self.structure_file = None
