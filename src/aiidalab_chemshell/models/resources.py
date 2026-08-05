@@ -6,7 +6,7 @@ import traitlets as tl
 class ComputationalResourcesModel(tl.HasTraits):
     """Model for the resource setup stage."""
 
-    code_label = tl.Unicode("").tag(sync=True)
+    code_label = tl.Unicode("", allow_none=True).tag(sync=True)
     ncpus = tl.Int(4).tag(sync=True)
     process_label = tl.Unicode("").tag(sync=True)
     process_description = tl.Unicode("").tag(sync=True)
