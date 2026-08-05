@@ -215,7 +215,7 @@ def build_sif(on_progress: Callable[[str], None] | None = None) -> tuple[bool, s
     _report(f"Pulling {CONTAINER_IMAGE_URI} to {target} ...")
     try:
         result = subprocess.run(
-            ["apptainer", "pull", str(target), CONTAINER_IMAGE_URI],
+            ["apptainer", "build", "--fakeroot", str(target), CONTAINER_IMAGE_URI],
             capture_output=True,
             text=True,
             check=False,
