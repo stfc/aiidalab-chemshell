@@ -72,7 +72,10 @@ class StructureSelectionWidget(ipw.VBox, HasTraits):
     def _on_file_upload(self, change: dict) -> None:
         """When file upload button is pressed."""
         if change["new"] != change["old"]:
-            self.viewer = StructureViewWidget(self.file_uploader.file)  # type: ignore
+            self.viewer = StructureViewWidget(
+                self.file_uploader.file,  # type: ignore
+                layout={"margin": "auto"},
+            )
             # self.viewer.assign_structure_from_file(
             #     self.file_uploader.file.filename,
             #     self.file_uploader.file.content,
@@ -84,7 +87,10 @@ class StructureSelectionWidget(ipw.VBox, HasTraits):
         """When SMILES string is inputted."""
         if change["new"] != change["old"]:
             self.structure_data = StructureData(ase=change["new"])
-            self.viewer = StructureViewWidget(self.structure_data)
+            self.viewer = StructureViewWidget(
+                self.structure_data,
+                layout={"margin": "auto"},
+            )
             self._update_children()
             if self.structure_file:
                 self.structure_file = None
@@ -111,7 +117,10 @@ class StructureSelectionWidget(ipw.VBox, HasTraits):
             if self.structure_file:
                 self.structure_file = None
             self.structure = change["new"]
-        self.viewer = StructureViewWidget(change["new"])
+        self.viewer = StructureViewWidget(
+            change["new"],
+            layout={"margin": "auto"},
+        )
         self._update_children()
         return
 
