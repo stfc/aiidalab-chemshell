@@ -4,7 +4,10 @@ from datetime import datetime
 
 import aiidalab_widgets_base as awb
 import ipywidgets as ipw
-from aiida.orm import CalcJobNode, WorkChainNode
+from aiida_chemshell.calculations.base import ChemShellCalculation
+from aiida_chemshell.workflows.batch_calculation import BatchProcessWorkChain
+from aiida_chemshell.workflows.isolated_atoms import IsolatedAtomicEnergiesWorkChain
+from aiida_chemshell.workflows.optimisation import GeometryOptimisationWorkChain
 from alc_aiidalab_widgets.widgets import AiiDADatabaseQueryWidget
 from IPython.display import display
 
@@ -88,7 +91,13 @@ class HistoryAppView(ipw.VBox):
             """
         )
         self.lookup_widget = AiiDADatabaseQueryWidget(
-            "Process Lookup", [CalcJobNode, WorkChainNode]
+            "Process Lookup",
+            [
+                ChemShellCalculation,
+                GeometryOptimisationWorkChain,
+                IsolatedAtomicEnergiesWorkChain,
+                BatchProcessWorkChain,
+            ],
         )
         self.lookup_widget.observe(self._update_node_view, "data_object")
 
