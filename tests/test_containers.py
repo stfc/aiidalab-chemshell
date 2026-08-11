@@ -157,7 +157,7 @@ def test_build_sif_success(tmp_path):
     assert progress  # at least one progress message emitted
     # The pull command targets the expected sif path and image uri.
     args = run.call_args.args[0]
-    assert args[:2] == ["apptainer", "pull"]
+    assert args[:2] == ["apptainer", "build"]
     assert args[-1] == containers.CONTAINER_IMAGE_URI
 
 
