@@ -33,6 +33,7 @@ class ChemShellWorkflowModel(HasTraits):
     vibrational_analysis = Bool(False).tag(sync=True)
     gradients = Bool(True)
     hessian = Bool(False)
+    combine_batch_results = Bool(True)
 
     structure_2 = StructureInputModel()
 

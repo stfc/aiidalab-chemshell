@@ -309,6 +309,7 @@ class ChemShellProcess:
 
         builder = BatchProcessWorkChain.get_builder()
         builder.code = load_code(self.model.resource_model.code_label)
+        builder.combine_results = self.model.workflow_model.combine_batch_results
 
         # Shared QM theory parameters applied to every item in the batch.
         builder.qm_parameters = Dict(
