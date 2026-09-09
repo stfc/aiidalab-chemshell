@@ -1,9 +1,9 @@
 label: chemsh
 description: ChemShell (parallel)
 computer: localhost
-filepath_executable: /opt/chemsh-py/bin/intel/chemsh.x
+filepath_executable: /opt/chemsh-py/bin/gnu/chemsh.x
 default_calc_job_plugin: chemshell
 use_double_quotes: false
 with_mpi: true
-prepend_text: 'source /opt/intel/oneapi/setvars.sh'
+prepend_text: 'export OMP_NUM_THREADS=1'
 append_text: ''
