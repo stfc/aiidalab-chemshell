@@ -116,7 +116,7 @@ class StructureSelectionWidget(ipw.VBox, HasTraits):
         elif isinstance(change["new"], StructureData):
             if self.structure_file:
                 self.structure_file = None
-            self.structure = change["new"]
+            self.structure_data = change["new"]
         self.viewer = StructureViewWidget(
             change["new"],
             layout={"margin": "auto"},
