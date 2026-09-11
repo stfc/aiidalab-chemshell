@@ -76,6 +76,8 @@ class ComputationalResourcesWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             self.model.submitted = True
             self.submit_btn.disabled = True
             self.submit_btn.description = "Submitted"
+            # Mark the (collapsed) step as complete via the AWB wizard icon.
+            self.state = self.State.SUCCESS
         else:
             print("ERROR: Input Validation Failed")
         return

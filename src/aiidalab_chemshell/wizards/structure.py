@@ -122,6 +122,8 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             self.submit_btn.description = "Submitted"
             self.structure_uploader.disable(True)
             self.model.submitted = True
+            # Mark the (collapsed) step as complete via the AWB wizard icon.
+            self.state = self.State.SUCCESS
         else:
             self.model.submitted = False
         return

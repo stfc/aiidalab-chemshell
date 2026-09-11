@@ -120,6 +120,8 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             self.workflow_tabs.children[self.workflow_tabs.selected_index].disable()
         self.submit_btn.description = "Submitted"
         self.submit_btn.disabled = True
+        # Mark the (collapsed) step as complete via the AWB wizard icon.
+        self.state = self.State.SUCCESS
         return
 
     def _generate_workflow_widgets(self, workflow: WorkflowOptions) -> ipw.VBox:
@@ -220,4 +222,6 @@ class BatchWorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         self.options.disable(True)
         self.submit_btn.description = "Submitted"
         self.submit_btn.disabled = True
+        # Mark the (collapsed) step as complete via the AWB wizard icon.
+        self.state = self.State.SUCCESS
         return
