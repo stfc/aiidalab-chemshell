@@ -205,7 +205,7 @@ _CHROME = f"""
 .{APP_ROOT_CLASS} #subtitle {{
     font-weight: 600;
     letter-spacing: 0.2px;
-    margin: 8px 0 4px;
+    margin: 20px 0 16px;
 }}
 .{APP_ROOT_CLASS} footer {{
     margin-top: var(--cs-pad);

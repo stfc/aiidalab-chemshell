@@ -86,9 +86,16 @@ class HistoryAppView(ipw.VBox):
         )
         h_line = ipw.HTML("<hr>")
 
+        subtitle = ipw.HTML(
+            """
+            <h2 id='subtitle' style="text-align: center;">
+                ChemShell Process History
+            </h2>
+            """
+        )
+
         self.guide = ipw.HTML(
             """
-            <h3>ChemShell Process History</h3>
             <p>
             Search through past ChemShell processes and visualise inputs, outputs and
             provenance relationships.
@@ -120,6 +127,7 @@ class HistoryAppView(ipw.VBox):
             children=[
                 chemshell_theme(),
                 header,
+                subtitle,
                 self.guide,
                 self.lookup_widget,
                 h_line,
