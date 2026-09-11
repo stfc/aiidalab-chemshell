@@ -47,7 +47,7 @@ class ComputationalResourcesWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             button_style="success",
             tooltip="Submit the calculation",
             icon="check",
-            layout={"width": "60%", "margin": "auto"},
+            layout={"width": "60%", "height": "30px", "margin": "20px auto 8px"},
         )
         self.submit_btn.on_click(self._submit)
         add_button_style_class(self.submit_btn)
@@ -157,7 +157,7 @@ class ResourceSetupBox(ipw.VBox):
             placeholder="Enter process description",
             description="Description:",
             disabled=False,
-            layout=ipw.Layout(width="80%"),
+            layout=ipw.Layout(width="80%", height="120px"),
         )
         tl.link((self.description, "value"), (self.model, "process_description"))
 

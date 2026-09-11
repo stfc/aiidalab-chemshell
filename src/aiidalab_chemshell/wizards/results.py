@@ -4,6 +4,7 @@ import aiidalab_widgets_base as awb
 import ipywidgets as ipw
 
 from aiidalab_chemshell.common.node_viewers import CustomAiidaNodeViewWidget
+from aiidalab_chemshell.common.utils import add_button_style_class
 from aiidalab_chemshell.models.results import ResultsModel
 
 
@@ -42,6 +43,7 @@ class ResultsWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             layout={"margin": "auto", "width": "70%"},
         )
         self.update_btn.on_click(self._refresh_info)
+        add_button_style_class(self.update_btn)
 
         super().__init__(**kwargs)
         return

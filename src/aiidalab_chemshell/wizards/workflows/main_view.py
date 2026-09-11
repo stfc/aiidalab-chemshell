@@ -81,7 +81,7 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             button_style="success",
             tooltip="Submit the workflow configuration",
             icon="check",
-            layout={"margin": "auto", "width": "60%"},
+            layout={"width": "60%", "height": "30px", "margin": "20px auto 8px"},
         )
         self.submit_btn.on_click(self._submit)
         add_button_style_class(self.submit_btn)
@@ -197,9 +197,10 @@ class BatchWorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             button_style="success",
             tooltip="Submit the workflow configuration",
             icon="check",
-            layout={"margin": "auto", "width": "60%"},
+            layout={"width": "60%", "height": "30px", "margin": "20px auto 8px"},
         )
         self.submit_btn.on_click(self._submit)
+        add_button_style_class(self.submit_btn)
 
         self.children = [
             self.header,

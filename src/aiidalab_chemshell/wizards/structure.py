@@ -82,7 +82,7 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             button_style="success",
             tooltip="Submit the structure to the workflow",
             icon="check",
-            layout={"margin": "auto", "width": "60%"},
+            layout={"width": "60%", "height": "30px", "margin": "20px auto 8px"},
         )
         add_button_style_class(self.submit_btn)
         self.submit_btn.on_click(self.submit_structure)
