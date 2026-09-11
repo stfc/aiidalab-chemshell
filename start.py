@@ -3,6 +3,7 @@
 import ipywidgets as ipw
 
 from aiidalab_chemshell.common.navigation import QuickAccessButtons
+from aiidalab_chemshell.common.theme import APP_ROOT_CLASS, chemshell_theme
 
 
 def get_start_widget(appbase, jupbase, notebase):
@@ -16,9 +17,12 @@ def get_start_widget(appbase, jupbase, notebase):
         </div>
         """
     )
-    return ipw.VBox(
+    banner = ipw.VBox(
         children=[
+            chemshell_theme(),
             logo,
             QuickAccessButtons(),
         ]
     )
+    banner.add_class(APP_ROOT_CLASS)
+    return banner

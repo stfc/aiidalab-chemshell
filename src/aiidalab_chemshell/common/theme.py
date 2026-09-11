@@ -58,9 +58,11 @@ _TOKENS = """
     /* Vertical gap between wizard step cards. */
     --cs-step-gap: 4px;
 
-    /* Typography */
-    --cs-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        Helvetica, Arial, sans-serif;
+    /* Typography. A native system-font stack: always available offline (no
+       web font to download), using whatever high-quality UI font the user's
+       OS already ships. */
+    --cs-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
 
     /* Brand accent (kept, not inherited from Jupyter). */
     --cs-accent: #2e7d32;

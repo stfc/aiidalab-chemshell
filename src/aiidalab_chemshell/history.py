@@ -13,6 +13,7 @@ from IPython.display import display
 
 from aiidalab_chemshell.common.navigation import QuickAccessButtons
 from aiidalab_chemshell.common.node_viewers import CustomAiidaNodeViewWidget
+from aiidalab_chemshell.common.theme import APP_ROOT_CLASS, chemshell_theme
 from aiidalab_chemshell.models.process import ProcessModel
 
 
@@ -113,6 +114,7 @@ class HistoryAppView(ipw.VBox):
         super().__init__(
             layout={},
             children=[
+                chemshell_theme(),
                 header,
                 nav_btns,
                 self.guide,
@@ -124,6 +126,7 @@ class HistoryAppView(ipw.VBox):
             ],
             **kwargs,
         )
+        self.add_class(APP_ROOT_CLASS)
         return
 
     def _update_node_view(self, _) -> None:
