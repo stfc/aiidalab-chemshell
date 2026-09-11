@@ -26,8 +26,22 @@ from aiidalab_chemshell.common.utils import CHEMSHELL_BUTTON_CLASS
 #: scoped under this class.
 APP_ROOT_CLASS = "chemshell-app"
 
-#: Design tokens. Tweak these to retune the whole app. Dark-mode overrides live
-#: in the ``@media (prefers-color-scheme: dark)`` block below.
+#: Design tokens. Tweak these to retune the whole app.
+#:
+#: Dark mode is handled in two layers (see :data:`_DARK`):
+#:
+#: 1. *Primary* — the neutral palette tokens inherit JupyterLab/Voila's own
+#:    ``--jp-*`` theme variables. Jupyter swaps those values when the user
+#:    changes theme, so the app automatically tracks the active Jupyter theme
+#:    (light, dark, or custom) with no extra work.
+#: 2. *Fallback* — each neutral references a ``*-fallback`` variable as the
+#:    second ``var()`` argument, used only when Jupyter's tokens are absent.
+#:    Those fallbacks are light by default and switched to dark by the OS
+#:    ``prefers-color-scheme`` block in :data:`_DARK`.
+#:
+#: The ChemShell green accent is kept as a brand colour (not inherited from
+#: Jupyter's brand blue); it and the shadows get dark-mode variants in both the
+#: Jupyter-dark and OS-dark blocks.
 _TOKENS = """
 :root {
     /* Radii */
@@ -48,14 +62,24 @@ _TOKENS = """
     --cs-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
         Helvetica, Arial, sans-serif;
 
-    /* Palette (light) */
+    /* Brand accent (kept, not inherited from Jupyter). */
     --cs-accent: #2e7d32;
-    --cs-accent-contrast: #ffffff;
-    --cs-surface: #ffffff;
-    --cs-surface-muted: #f5f6f8;
-    --cs-border: #e2e5ea;
-    --cs-text: #1f2933;
-    --cs-text-muted: #6b7280;
+    --cs-accent-contrast: var(--jp-ui-inverse-font-color1, #ffffff);
+
+    /* Neutral palette: inherit Jupyter's theme tokens, falling back to our own
+       light values (which the OS-dark block flips to dark) when absent. */
+    --cs-surface: var(--jp-layout-color1, var(--cs-surface-fallback));
+    --cs-surface-muted: var(--jp-layout-color2, var(--cs-surface-muted-fallback));
+    --cs-border: var(--jp-border-color1, var(--cs-border-fallback));
+    --cs-text: var(--jp-ui-font-color1, var(--cs-text-fallback));
+    --cs-text-muted: var(--jp-ui-font-color2, var(--cs-text-muted-fallback));
+
+    /* Light fallbacks (used only when the --jp-* tokens above are undefined). */
+    --cs-surface-fallback: #ffffff;
+    --cs-surface-muted-fallback: #f5f6f8;
+    --cs-border-fallback: #e2e5ea;
+    --cs-text-fallback: #1f2933;
+    --cs-text-muted-fallback: #6b7280;
 }
 """
 
@@ -172,20 +196,35 @@ _CHROME = f"""
 }}
 """
 
-#: Dark-mode overrides. Only the palette tokens change; every rule above follows
-#: automatically. Fill in / adjust as the dark palette is finalised.
+#: Dark-mode overrides, layered.
+#:
+#: The neutral palette needs no override here: it inherits Jupyter's ``--jp-*``
+#: tokens, which Jupyter itself flips to dark. These blocks only adjust the
+#: things Jupyter does not provide — the brand accent (to a lighter, more
+#: legible green on dark) and the shadows (deepened).
+#:
+#: * ``body[data-jp-theme-light="false"]`` fires when a Jupyter dark theme is
+#:   active (primary trigger).
+#: * ``@media (prefers-color-scheme: dark)`` additionally switches the neutral
+#:   *fallbacks* to dark so the app still looks right when Jupyter's tokens are
+#:   absent and the OS prefers dark (fallback trigger).
 _DARK = """
+body[data-jp-theme-light="false"] {
+    --cs-accent: #66bb6a;
+    --cs-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --cs-shadow-md: 0 3px 8px rgba(0, 0, 0, 0.6);
+}
 @media (prefers-color-scheme: dark) {
     :root {
         --cs-accent: #66bb6a;
-        --cs-accent-contrast: #0b0f0c;
-        --cs-surface: #1e2228;
-        --cs-surface-muted: #171a1f;
-        --cs-border: #333a44;
-        --cs-text: #e6e8eb;
-        --cs-text-muted: #9aa3af;
         --cs-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
         --cs-shadow-md: 0 3px 8px rgba(0, 0, 0, 0.6);
+
+        --cs-surface-fallback: #1e2228;
+        --cs-surface-muted-fallback: #171a1f;
+        --cs-border-fallback: #333a44;
+        --cs-text-fallback: #e6e8eb;
+        --cs-text-muted-fallback: #9aa3af;
     }
 }
 """
