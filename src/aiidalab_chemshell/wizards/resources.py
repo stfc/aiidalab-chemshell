@@ -5,6 +5,10 @@ import ipywidgets as ipw
 import traitlets as tl
 from aiida.orm import ContainerizedCode, InstalledCode, PortableCode, QueryBuilder
 
+from aiidalab_chemshell.common.utils import (
+    add_button_style_class,
+    chemshell_button_style,
+)
 from aiidalab_chemshell.models.resources import ComputationalResourcesModel
 from aiidalab_chemshell.utils import test_aiida_chemsh_import
 
@@ -43,11 +47,13 @@ class ComputationalResourcesWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             button_style="success",
             tooltip="Submit the calculation",
             icon="check",
-            layout={"width": "80%", "margin": "auto"},
+            layout={"width": "60%", "margin": "auto"},
         )
         self.submit_btn.on_click(self._submit)
+        add_button_style_class(self.submit_btn)
 
         self.children = [
+            chemshell_button_style(),
             # self.header,
             self.guide,
             self.chemsh_warning if not self.chemsh_installed else ipw.HTML(""),
@@ -119,6 +125,7 @@ class ResourceSetupBox(ipw.VBox):
             layout={"width": "20%"},
         )
         self.refresh_codes_button.on_click(self.update_codes)
+        add_button_style_class(self.refresh_codes_button)
         self.code_box = ipw.HBox(
             layout={"width": "100%"}, children=[self.code, self.refresh_codes_button]
         )
@@ -155,6 +162,7 @@ class ResourceSetupBox(ipw.VBox):
         tl.link((self.description, "value"), (self.model, "process_description"))
 
         self.children = [
+            chemshell_button_style(),
             self.code_box,
             self.ncpus_input,
             self.label,

@@ -4,6 +4,10 @@ import aiidalab_widgets_base as awb
 import ipywidgets as ipw
 
 from aiidalab_chemshell.common.chemshell import WorkflowOptions
+from aiidalab_chemshell.common.utils import (
+    add_button_style_class,
+    chemshell_button_style,
+)
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 from aiidalab_chemshell.wizards.workflows.geometry_optimisation import (
     ChemShellOptionsWidget,
@@ -80,9 +84,16 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             layout={"margin": "auto", "width": "60%"},
         )
         self.submit_btn.on_click(self._submit)
+        add_button_style_class(self.submit_btn)
 
         # Create the wizard from the component widgets
-        self.children = [self.header, self.guide, self.workflow_tabs, self.submit_btn]
+        self.children = [
+            chemshell_button_style(),
+            self.header,
+            self.guide,
+            self.workflow_tabs,
+            self.submit_btn,
+        ]
         self.rendered = True
         self.workflow_tabs.children[self.workflow_tabs.selected_index].render()
         return
