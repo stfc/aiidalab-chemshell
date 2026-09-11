@@ -26,6 +26,10 @@ from aiidalab_chemshell.common.utils import CHEMSHELL_BUTTON_CLASS
 #: scoped under this class.
 APP_ROOT_CLASS = "chemshell-app"
 
+#: CSS class applied to the header "app bar" (logo, subtitle and quick-access
+#: buttons). See :func:`chemshell_appbar`.
+APPBAR_CLASS = "chemshell-appbar"
+
 #: Design tokens. Tweak these to retune the whole app.
 #:
 #: Dark mode is handled in two layers (see :data:`_DARK`):
@@ -125,6 +129,21 @@ _CARDS = f"""
 .{APP_ROOT_CLASS} .widget-accordion .lm-Accordion-child .lm-Collapse-contents,
 .{APP_ROOT_CLASS} .jupyter-widget-Accordion .lm-Accordion-child .lm-Collapse-contents {{
     padding: var(--cs-pad);
+}}
+"""
+
+#: Header "app bar": logo, subtitle and quick-access buttons on a muted surface
+#: band, matching the wizard-step card treatment so the page top reads as a
+#: distinct region.
+_APPBAR = f"""
+.{APP_ROOT_CLASS} .{APPBAR_CLASS} {{
+    background: var(--cs-surface-muted);
+    border: 1px solid var(--cs-border);
+    border-radius: var(--cs-radius-lg);
+    box-shadow: var(--cs-shadow-sm);
+    padding: var(--cs-pad);
+    margin-bottom: var(--cs-gap);
+    align-items: center;
 }}
 """
 
@@ -236,11 +255,34 @@ _THEME = f"""
 {_TOKENS}
 {_BUTTONS}
 {_CARDS}
+{_APPBAR}
 {_INPUTS}
 {_CHROME}
 {_DARK}
 </style>
 """
+
+
+def chemshell_appbar(children):
+    """Return a header "app bar" ``VBox`` wrapping the given children.
+
+    The returned box carries :data:`APPBAR_CLASS` and is styled as a muted
+    surface band. Intended to hold the logo, subtitle and quick-access buttons
+    at the top of a page.
+
+    Parameters
+    ----------
+    children : list of ipywidgets.Widget
+        Widgets to place inside the app bar (e.g. logo, subtitle, nav buttons).
+
+    Returns
+    -------
+    ipywidgets.VBox
+        The styled app-bar container.
+    """
+    bar = ipw.VBox(children=children, layout=ipw.Layout(margin="auto"))
+    bar.add_class(APPBAR_CLASS)
+    return bar
 
 
 def chemshell_theme():

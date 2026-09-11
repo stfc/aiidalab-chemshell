@@ -6,7 +6,11 @@ import ipywidgets as ipw
 from IPython.display import display
 
 from aiidalab_chemshell.common.navigation import QuickAccessButtons
-from aiidalab_chemshell.common.theme import APP_ROOT_CLASS, chemshell_theme
+from aiidalab_chemshell.common.theme import (
+    APP_ROOT_CLASS,
+    chemshell_appbar,
+    chemshell_theme,
+)
 from aiidalab_chemshell.process import BatchAppModel, MainAppModel
 from aiidalab_chemshell.wizards.main_app import BatchWizardWidget, MainWizardWidget
 
@@ -92,13 +96,7 @@ class AppView(ipw.VBox):
 
         nav_btns = QuickAccessButtons()
 
-        header = ipw.VBox(
-            children=[
-                logo,
-                subtitle_widget,
-            ],
-            layout={"margin": "auto", "align_items": "center"},
-        )
+        header = chemshell_appbar([logo, nav_btns])
 
         footer = ipw.HTML(
             f"""
@@ -114,7 +112,7 @@ class AppView(ipw.VBox):
 
         super().__init__(
             layout={},
-            children=[chemshell_theme(), header, nav_btns, self.main, footer],
+            children=[chemshell_theme(), header, subtitle_widget, self.main, footer],
             **kwargs,
         )
         self.add_class(APP_ROOT_CLASS)

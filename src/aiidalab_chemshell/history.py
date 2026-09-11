@@ -13,7 +13,11 @@ from IPython.display import display
 
 from aiidalab_chemshell.common.navigation import QuickAccessButtons
 from aiidalab_chemshell.common.node_viewers import CustomAiidaNodeViewWidget
-from aiidalab_chemshell.common.theme import APP_ROOT_CLASS, chemshell_theme
+from aiidalab_chemshell.common.theme import (
+    APP_ROOT_CLASS,
+    chemshell_appbar,
+    chemshell_theme,
+)
 from aiidalab_chemshell.models.process import ProcessModel
 
 
@@ -63,12 +67,12 @@ class HistoryAppView(ipw.VBox):
 
         nav_btns = QuickAccessButtons()
 
-        header = ipw.VBox(
-            children=[
+        header = chemshell_appbar(
+            [
                 logo,
                 # subtitle,
-            ],
-            layout={"margin": "auto"},
+                nav_btns,
+            ]
         )
 
         footer = ipw.HTML(
@@ -116,7 +120,6 @@ class HistoryAppView(ipw.VBox):
             children=[
                 chemshell_theme(),
                 header,
-                nav_btns,
                 self.guide,
                 self.lookup_widget,
                 h_line,
