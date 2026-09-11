@@ -22,6 +22,7 @@ def _fake_model(has_trajectory=False, has_file=False, use_mm=False):
             hessian=False,
             force_field=None,
             qm_region="",
+            combine_batch_results=True,
         ),
         resource_model=SimpleNamespace(
             code_label="chemsh@localhost",
