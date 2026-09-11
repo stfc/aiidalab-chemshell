@@ -91,7 +91,14 @@ _TOKENS = """
 
 #: Sleek button styling, driven by the shared design tokens. ``!important`` is
 #: required to win over the default ipywidgets/Jupyter button rules.
+#:
+#: The generic ``.jupyter-button`` selector styles *every* button rendered
+#: inside the app — including those from imported widgets (aiidalab-widgets-base,
+#: alc-aiidalab-widgets) — so the look is consistent without having to tag each
+#: one. ``.{CHEMSHELL_BUTTON_CLASS}`` is kept so buttons rendered standalone
+#: (outside the app root, via the unscoped stylesheet in utils) match too.
 _BUTTONS = f"""
+.{APP_ROOT_CLASS} .jupyter-button,
 .{APP_ROOT_CLASS} .{CHEMSHELL_BUTTON_CLASS} {{
     box-sizing: border-box !important;
     border-radius: var(--cs-radius) !important;
@@ -100,10 +107,12 @@ _BUTTONS = f"""
     box-shadow: var(--cs-shadow-sm);
     transition: transform 0.08s ease, box-shadow 0.15s ease;
 }}
+.{APP_ROOT_CLASS} .jupyter-button:hover,
 .{APP_ROOT_CLASS} .{CHEMSHELL_BUTTON_CLASS}:hover {{
     transform: translateY(-1px);
     box-shadow: var(--cs-shadow-md);
 }}
+.{APP_ROOT_CLASS} .jupyter-button:active,
 .{APP_ROOT_CLASS} .{CHEMSHELL_BUTTON_CLASS}:active {{
     transform: translateY(0);
     box-shadow: var(--cs-shadow-sm);
