@@ -4,6 +4,10 @@ import aiidalab_widgets_base as awb
 import ipywidgets as ipw
 
 from aiidalab_chemshell.common.chemshell import WorkflowOptions
+from aiidalab_chemshell.common.utils import (
+    add_button_style_class,
+    chemshell_button_style,
+)
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 from aiidalab_chemshell.wizards.workflows.geometry_optimisation import (
     ChemShellOptionsWidget,
@@ -77,12 +81,19 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             button_style="success",
             tooltip="Submit the workflow configuration",
             icon="check",
-            layout={"margin": "auto", "width": "60%"},
+            layout={"width": "60%", "height": "30px", "margin": "20px auto 8px"},
         )
         self.submit_btn.on_click(self._submit)
+        add_button_style_class(self.submit_btn)
 
         # Create the wizard from the component widgets
-        self.children = [self.header, self.guide, self.workflow_tabs, self.submit_btn]
+        self.children = [
+            chemshell_button_style(),
+            self.header,
+            self.guide,
+            self.workflow_tabs,
+            self.submit_btn,
+        ]
         self.rendered = True
         self.workflow_tabs.children[self.workflow_tabs.selected_index].render()
         return
@@ -109,6 +120,8 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             self.workflow_tabs.children[self.workflow_tabs.selected_index].disable()
         self.submit_btn.description = "Submitted"
         self.submit_btn.disabled = True
+        # Mark the (collapsed) step as complete via the AWB wizard icon.
+        self.state = self.State.SUCCESS
         return
 
     def _generate_workflow_widgets(self, workflow: WorkflowOptions) -> ipw.VBox:
@@ -186,9 +199,10 @@ class BatchWorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             button_style="success",
             tooltip="Submit the workflow configuration",
             icon="check",
-            layout={"margin": "auto", "width": "60%"},
+            layout={"width": "60%", "height": "30px", "margin": "20px auto 8px"},
         )
         self.submit_btn.on_click(self._submit)
+        add_button_style_class(self.submit_btn)
 
         self.children = [
             self.header,
@@ -208,4 +222,6 @@ class BatchWorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         self.options.disable(True)
         self.submit_btn.description = "Submitted"
         self.submit_btn.disabled = True
+        # Mark the (collapsed) step as complete via the AWB wizard icon.
+        self.state = self.State.SUCCESS
         return

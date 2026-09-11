@@ -9,6 +9,10 @@ import ipywidgets as ipw
 from traitlets import HasTraits, Unicode, observe
 
 from aiidalab_chemshell import containers
+from aiidalab_chemshell.common.utils import (
+    add_button_style_class,
+    chemshell_button_style,
+)
 
 
 class CodeSetupWidget(ipw.VBox, HasTraits):
@@ -67,9 +71,11 @@ class ChemShellContainerSetupWidget(ipw.VBox):
             layout={"width": "auto"},
         )
         self.install_btn.on_click(self._on_install_clicked)
+        add_button_style_class(self.install_btn)
         self.status = ipw.HTML("")
 
         children = [
+            chemshell_button_style(),
             self.install_btn,
             self.status,
         ]

@@ -4,6 +4,7 @@ import aiidalab_widgets_base as awb
 import ipywidgets as ipw
 
 from aiidalab_chemshell.common.node_viewers import CustomAiidaNodeViewWidget
+from aiidalab_chemshell.common.utils import add_button_style_class
 from aiidalab_chemshell.models.results import ResultsModel
 
 
@@ -42,6 +43,7 @@ class ResultsWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             layout={"margin": "auto", "width": "70%"},
         )
         self.update_btn.on_click(self._refresh_info)
+        add_button_style_class(self.update_btn)
 
         super().__init__(**kwargs)
         return
@@ -76,9 +78,26 @@ class ResultsWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
                 self.update_btn,
             ]
             self.rendered = True
+            self._update_state()
         return
 
     def _refresh_info(self, _) -> None:
         """Refresh the process information."""
         self.node_tree.update()
+        self._update_state()
+        return
+
+    def _update_state(self) -> None:
+        """Reflect the AiiDA process status in the (collapsed) step icon."""
+        process = self.model.process
+        if process is None:
+            return
+        if process.is_finished_ok:
+            self.state = self.State.SUCCESS
+        elif process.is_terminated:
+            # Finished with a non-zero exit status, excepted or killed.
+            self.state = self.State.FAIL
+        else:
+            # Still created/waiting/running.
+            self.state = self.State.ACTIVE
         return

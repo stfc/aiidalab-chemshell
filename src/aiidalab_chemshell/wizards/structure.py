@@ -4,6 +4,10 @@ import aiidalab_widgets_base as awb
 import ipywidgets as ipw
 
 from aiidalab_chemshell.common.structure_uploader import StructureSelectionWidget
+from aiidalab_chemshell.common.utils import (
+    add_button_style_class,
+    chemshell_button_style,
+)
 from aiidalab_chemshell.models.structure import StructureInputModel
 
 
@@ -78,8 +82,9 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             button_style="success",
             tooltip="Submit the structure to the workflow",
             icon="check",
-            layout={"margin": "auto", "width": "60%"},
+            layout={"width": "60%", "height": "30px", "margin": "20px auto 8px"},
         )
+        add_button_style_class(self.submit_btn)
         self.submit_btn.on_click(self.submit_structure)
         self.viewer = ipw.HTML("<p>No structure found...</p>")
         self.error = ipw.HTML("")
@@ -90,6 +95,7 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
 
     def _update_children(self) -> None:
         self.children = [
+            chemshell_button_style(),
             self.info,
             self.structure_uploader,
             self.error,
@@ -116,6 +122,8 @@ class StructureWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             self.submit_btn.description = "Submitted"
             self.structure_uploader.disable(True)
             self.model.submitted = True
+            # Mark the (collapsed) step as complete via the AWB wizard icon.
+            self.state = self.State.SUCCESS
         else:
             self.model.submitted = False
         return

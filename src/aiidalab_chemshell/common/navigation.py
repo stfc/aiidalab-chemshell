@@ -4,6 +4,10 @@ from functools import partial
 
 import ipywidgets as ipw
 
+from aiidalab_chemshell.common.utils import (
+    add_button_style_class,
+    chemshell_button_style,
+)
 from aiidalab_chemshell.utils import open_link_in_new_tab
 
 _APPS_DIRECTORY = "/apps/apps/"
@@ -95,5 +99,10 @@ class QuickAccessButtons(ipw.HBox):
             self.resource_setup_link,
             self.docs_link,
         ]
-        super().__init__(children=children, layout={"margin": "auto"}, **kwargs)
+        add_button_style_class(*children)
+        super().__init__(
+            children=[chemshell_button_style(), *children],
+            layout={"margin": "auto"},
+            **kwargs,
+        )
         return

@@ -13,6 +13,11 @@ from IPython.display import display
 
 from aiidalab_chemshell.common.navigation import QuickAccessButtons
 from aiidalab_chemshell.common.node_viewers import CustomAiidaNodeViewWidget
+from aiidalab_chemshell.common.theme import (
+    APP_ROOT_CLASS,
+    chemshell_appbar,
+    chemshell_theme,
+)
 from aiidalab_chemshell.models.process import ProcessModel
 
 
@@ -62,12 +67,12 @@ class HistoryAppView(ipw.VBox):
 
         nav_btns = QuickAccessButtons()
 
-        header = ipw.VBox(
-            children=[
+        header = chemshell_appbar(
+            [
                 logo,
                 # subtitle,
-            ],
-            layout={"margin": "auto"},
+                nav_btns,
+            ]
         )
 
         footer = ipw.HTML(
@@ -81,9 +86,16 @@ class HistoryAppView(ipw.VBox):
         )
         h_line = ipw.HTML("<hr>")
 
+        subtitle = ipw.HTML(
+            """
+            <h2 id='subtitle' style="text-align: center;">
+                ChemShell Process History
+            </h2>
+            """
+        )
+
         self.guide = ipw.HTML(
             """
-            <h3>ChemShell Process History</h3>
             <p>
             Search through past ChemShell processes and visualise inputs, outputs and
             provenance relationships.
@@ -113,8 +125,9 @@ class HistoryAppView(ipw.VBox):
         super().__init__(
             layout={},
             children=[
+                chemshell_theme(),
                 header,
-                nav_btns,
+                subtitle,
                 self.guide,
                 self.lookup_widget,
                 h_line,
@@ -124,6 +137,7 @@ class HistoryAppView(ipw.VBox):
             ],
             **kwargs,
         )
+        self.add_class(APP_ROOT_CLASS)
         return
 
     def _update_node_view(self, _) -> None:
