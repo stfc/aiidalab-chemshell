@@ -27,19 +27,14 @@ other options exist for more tailored startup environments.
 
 ## ChemShell Containers
 
-Multiple docker images are provided with this repository which build on the core foundation of the images
-provided by AiiDAlab bundling various components of the ChemShell workflows on-top of the core AiiDAlab
-application. At present two images are available; [base](https://github.com/stfc/aiidalab-chemshell/pkgs/container/aiidalab-chemshell%2Fbase) includes the AiiDAlab ChemShell plugin pre-installed including all
-required dependencies,
-[full](https://github.com/stfc/aiidalab-chemshell/pkgs/container/aiidalab-chemshell%2Ffull) builds upon
-the base package including a working installation of ChemShell (version 25) configured with DL_POLY, NWChem
-and PySCF as available backends.
-
+A docker image is provided with this repository which builds on the core foundation of the images provided
+by AiiDAlab bundling additional components for running ChemShell calculations locally out-of-the-box.
+It comes with ChemShell v26.0.0 alongside DL_POLY, NWChem and PySCF as compiled backends.
 To run one of the provided containers, first install and setup your desired container engine, then run the
 image as follows,
 
 ``` sh
-docker run -it --rm -p 8888:8888 -v $HOME:/home/jovyan ghcr.io/stfc/aiidalab-chemshell/base:latest
+docker run -it --rm -p 8888:8888 -v $HOME:/home/jovyan ghcr.io/stfc/aiidalab-chemshell/full:latest
 ```
 
 The additional run parameters will run the container interactively (``-it``), delete it when it is finished
