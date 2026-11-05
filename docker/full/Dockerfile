@@ -1,5 +1,4 @@
-FROM ghcr.io/stfc/alc-ux/base:py310 
-# FROM aiidalab/full-stack:edge 
+FROM aiidalab/full-stack:latest 
 
 LABEL maintainer="Dr Benjamin T. Speake <benjamin.speake@stfc.ac.uk>"
 LABEL org.opencontainers.image.source="https://github.com/stfc/aiidalab-chemshell"
@@ -21,7 +20,6 @@ RUN apt update && apt install cmake gfortran libopenmpi-dev openmpi-bin \
     apt-get autoremove -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY 55_start_aiida_daemon.sh /usr/local/bin/before-notebook.d/
 COPY 62_setup_chemsh.sh /usr/local/bin/before-notebook.d/
 COPY chemsh.yml /opt/chemsh.yml 
 
