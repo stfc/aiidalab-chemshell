@@ -20,6 +20,12 @@ other AiiDAlab apps sharing the same page. The design tokens live on ``:root``
 
 import ipywidgets as ipw
 
+from aiidalab_chemshell.common.citation import (
+    CITATION_BOX_CLASS,
+    CITATION_HEADER_CLASS,
+    CITATION_TOGGLE_CLASS,
+    FOOTER_CLASS,
+)
 from aiidalab_chemshell.common.utils import CHEMSHELL_BUTTON_CLASS
 
 #: CSS class applied to the top-level application container. All theme rules are
@@ -216,13 +222,64 @@ _CHROME = f"""
     letter-spacing: 0.2px;
     margin: 20px 0 16px;
 }}
-.{APP_ROOT_CLASS} footer {{
+.{APP_ROOT_CLASS} .{FOOTER_CLASS} {{
     margin-top: var(--cs-pad);
     padding-top: var(--cs-gap);
     border-top: 1px solid var(--cs-border);
     color: var(--cs-text-muted);
     font-size: 0.85em;
     text-align: center;
+    align-items: center;
+}}
+.{APP_ROOT_CLASS} .{FOOTER_CLASS} a {{
+    color: var(--cs-accent);
+}}
+.{APP_ROOT_CLASS} .{CITATION_TOGGLE_CLASS}.jupyter-button {{
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    color: var(--cs-accent) !important;
+    font-weight: 400 !important;
+    text-decoration: underline;
+    cursor: pointer;
+}}
+.{APP_ROOT_CLASS} .{CITATION_TOGGLE_CLASS}.jupyter-button:hover {{
+    transform: none;
+    box-shadow: none !important;
+}}
+.{APP_ROOT_CLASS} .{CITATION_BOX_CLASS} {{
+    text-align: left;
+    /* rem, not em: the box sits inside .{FOOTER_CLASS} (font-size: 0.85em), so
+       an em value here would compound and shrink the text further instead of
+       growing it. */
+    font-size: 1.15rem;
+    max-height: 280px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    border: 1px solid var(--cs-border);
+    border-radius: var(--cs-radius);
+    padding: 10px 14px;
+    background: var(--cs-surface);
+}}
+.{APP_ROOT_CLASS} .{CITATION_BOX_CLASS} p {{
+    margin: 0 0 10px;
+}}
+.{APP_ROOT_CLASS} .{CITATION_BOX_CLASS} .{CITATION_HEADER_CLASS} {{
+    font-weight: 600;
+    color: var(--cs-text);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--cs-border);
+}}
+.{APP_ROOT_CLASS} .{CITATION_BOX_CLASS} p:last-child {{
+    margin-bottom: 0;
+}}
+.{APP_ROOT_CLASS} .{CITATION_BOX_CLASS} a {{
+    color: var(--cs-accent);
+    word-break: break-all;
 }}
 """
 

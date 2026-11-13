@@ -1,10 +1,9 @@
 """Defines the AiiDAlab application pages (new calculation and batch processing)."""
 
-from datetime import datetime
-
 import ipywidgets as ipw
 from IPython.display import display
 
+from aiidalab_chemshell.common.citation import chemshell_footer
 from aiidalab_chemshell.common.navigation import QuickAccessButtons
 from aiidalab_chemshell.common.theme import (
     APP_ROOT_CLASS,
@@ -98,15 +97,7 @@ class AppView(ipw.VBox):
 
         header = chemshell_appbar([logo, nav_btns])
 
-        footer = ipw.HTML(
-            f"""
-            <footer>
-                Copyright (c) {datetime.now().year} Ada Lovelace Centre
-                (STFC) <br>
-            </footer>
-            """,
-            layout={"align-content": "right"},
-        )
+        footer = chemshell_footer()
 
         self.main = wizard
 

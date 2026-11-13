@@ -1,7 +1,5 @@
 """Defines the process history applicaion page."""
 
-from datetime import datetime
-
 import ipywidgets as ipw
 from aiida_chemshell.calculations.base import ChemShellCalculation
 from aiida_chemshell.workflows.batch_calculation import BatchProcessWorkChain
@@ -10,6 +8,7 @@ from aiida_chemshell.workflows.optimisation import GeometryOptimisationWorkChain
 from alc_aiidalab_widgets.widgets import AiiDADatabaseQueryWidget
 from IPython.display import display
 
+from aiidalab_chemshell.common.citation import chemshell_footer
 from aiidalab_chemshell.common.navigation import QuickAccessButtons
 from aiidalab_chemshell.common.node_viewers import CustomAiidaNodeViewWidget
 from aiidalab_chemshell.common.process_tree import ProcessNodesTreeWidget
@@ -75,15 +74,7 @@ class HistoryAppView(ipw.VBox):
             ]
         )
 
-        footer = ipw.HTML(
-            f"""
-            <footer>
-                Copyright (c) {datetime.now().year} Ada Lovelace Centre
-                (STFC) <br>
-            </footer>
-            """,
-            layout={"align-content": "right"},
-        )
+        footer = chemshell_footer()
         h_line = ipw.HTML("<hr>")
 
         subtitle = ipw.HTML(
