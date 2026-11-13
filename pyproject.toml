@@ -23,7 +23,7 @@ dependencies = [
     "aiida-core>=2.7",
     "aiidalab-widgets-base",
     "aiida-chemshell>=0.3.2",
-    "alc-aiidalab-widgets>=0.3.0",
+    "alc-aiidalab-widgets>=0.3.1",
     "rdkit",
     "weas-widget",
 ]
