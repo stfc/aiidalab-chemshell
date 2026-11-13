@@ -25,8 +25,9 @@ def _fake_model(has_trajectory=False, has_file=False, use_mm=False):
             combine_batch_results=True,
         ),
         resource_model=SimpleNamespace(
-            code_label="chemsh@localhost",
-            ncpus=4,
+            chemsh_code="chemsh@localhost",
+            chemsh_withmpi=True,
+            chemsh_num_mpiprocs=4,
             process_label="batch label",
             process_description="batch description",
         ),

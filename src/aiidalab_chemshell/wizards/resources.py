@@ -3,7 +3,7 @@
 import aiidalab_widgets_base as awb
 import ipywidgets as ipw
 import traitlets as tl
-from aiida.orm import ContainerizedCode, InstalledCode, PortableCode, QueryBuilder
+from alc_aiidalab_widgets.widgets import CodeSelector
 
 from aiidalab_chemshell.common.utils import (
     add_button_style_class,
@@ -113,43 +113,24 @@ class ResourceSetupBox(ipw.VBox):
         super().__init__(layout={"margin": "auto", "width": "80%"}, **kwargs)
         self.model = model
 
-        self.code = ipw.Dropdown(
+        self.code_selector = CodeSelector(
+            model=self.model,
+            code_name="chemsh",
             description="Code:",
-            layout={"width": "60%"},
+            show_mpi=True,
         )
-        self.update_codes()
-        tl.link((self.code, "value"), (self.model, "code_label"))
-        self.refresh_codes_button = ipw.Button(
-            description="Refresh",
-            button_style="info",
-            tooltip="Refresh the list of available codes",
-            icon="refresh",
-            layout={"width": "20%"},
-        )
-        self.refresh_codes_button.on_click(self.update_codes)
-        add_button_style_class(self.refresh_codes_button)
-        self.code_box = ipw.HBox(
-            layout={"width": "100%"}, children=[self.code, self.refresh_codes_button]
-        )
-
-        # tl.link((self.code, "value"), (self.model, "code"))
-
-        self.ncpus_input = ipw.BoundedIntText(
-            value=self.model.ncpus,
-            min=1,
-            max=128,
-            step=1,
-            description="No. CPUs:",
-            disabled=False,
-            layout=ipw.Layout(width="80%"),
-        )
-        tl.link((self.ncpus_input, "value"), (self.model, "ncpus"))
+        # Match the width/description-label styling used by the sibling fields
+        # below so the inputs line up (CodeSelector hardcodes its own layout,
+        # so these must be overridden after construction).
+        self.code_selector.layout.width = "80%"
+        self.code_selector.code.style.description_width = "100px"
 
         self.label = ipw.Text(
             value=self.model.process_label,
             placeholder="Enter process label",
             description="Label:",
             disabled=False,
+            style={"description_width": "100px"},
             layout=ipw.Layout(width="80%"),
         )
         tl.link((self.label, "value"), (self.model, "process_label"))
@@ -159,25 +140,14 @@ class ResourceSetupBox(ipw.VBox):
             placeholder="Enter process description",
             description="Description:",
             disabled=False,
+            style={"description_width": "100px"},
             layout=ipw.Layout(width="80%", height="120px"),
         )
         tl.link((self.description, "value"), (self.model, "process_description"))
 
         self.children = [
             chemshell_button_style(),
-            self.code_box,
-            self.ncpus_input,
+            self.code_selector,
             self.label,
             self.description,
         ]
-
-    def update_codes(self, _=None) -> None:
-        """Update the list of available codes."""
-        qb = QueryBuilder()
-        qb.append((InstalledCode, ContainerizedCode, PortableCode))
-        codes = qb.all()
-        code_labels = [f"{code[0].label}@{code[0].computer.label}" for code in codes]
-        self.code.options = code_labels
-        if code_labels:
-            self.code.value = code_labels[0]
-        return

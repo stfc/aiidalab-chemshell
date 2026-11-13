@@ -155,7 +155,7 @@ class ChemShellProcess:
 
     def _submit_core_calcjob(self) -> None:
         # Get the ChemShell code instance
-        builder = load_code(self.model.resource_model.code_label).get_builder()
+        builder = load_code(self.model.resource_model.chemsh_code).get_builder()
         # Configure the structure input
         if self.model.structure_model.has_file:
             builder.structure = self.model.structure_model.structure_file
@@ -205,14 +205,14 @@ class ChemShellProcess:
             )
         # Setup metadata and resource parameters
         builder.metadata.options.resources = {
-            "num_mpiprocs_per_machine": self.model.resource_model.ncpus,
-            "num_cores_per_machine": self.model.resource_model.ncpus,
+            "num_mpiprocs_per_machine": self.model.resource_model.chemsh_num_mpiprocs,
+            "num_cores_per_machine": self.model.resource_model.chemsh_num_mpiprocs,
             "num_machines": 1,
-            "tot_num_mpiprocs": self.model.resource_model.ncpus,
+            "tot_num_mpiprocs": self.model.resource_model.chemsh_num_mpiprocs,
         }
         # Only set ``withmpi`` when the code itself does not declare it.
         if builder.code.with_mpi is None:
-            builder.metadata.options.withmpi = self.model.resource_model.ncpus > 1
+            builder.metadata.options.withmpi = self.model.resource_model.chemsh_withmpi
         # Submit and apply the label/description to the CalcJob
         self.node = submit(builder)
         self.node.label = self.model.resource_model.process_label
@@ -222,7 +222,7 @@ class ChemShellProcess:
     def _submit_optimisation_workflow(self) -> None:
         """Create and submit the AiiDA Workflow for a geometry optimisation."""
         builder = WorkflowFactory("chemshell.opt").get_builder()  # pyright: ignore[reportFunctionMemberAccess]
-        builder.chemsh.code = load_code(self.model.resource_model.code_label)
+        builder.chemsh.code = load_code(self.model.resource_model.chemsh_code)
         if self.model.structure_model.has_file:
             builder.chemsh.structure = self.model.structure_model.structure_file
         else:
@@ -253,15 +253,15 @@ class ChemShellProcess:
         # builder.chemsh.calculation_parameters = Dict({"gradients": True})
         builder.vibrational_analysis = self.model.workflow_model.vibrational_analysis
         builder.chemsh.metadata.options.resources = {
-            "num_mpiprocs_per_machine": self.model.resource_model.ncpus,
-            "num_cores_per_machine": self.model.resource_model.ncpus,
+            "num_mpiprocs_per_machine": self.model.resource_model.chemsh_num_mpiprocs,
+            "num_cores_per_machine": self.model.resource_model.chemsh_num_mpiprocs,
             "num_machines": 1,
-            "tot_num_mpiprocs": self.model.resource_model.ncpus,
+            "tot_num_mpiprocs": self.model.resource_model.chemsh_num_mpiprocs,
         }
         # Only set ``withmpi`` when the code itself does not declare it.
         if builder.chemsh.code.with_mpi is None:
             builder.chemsh.metadata.options.withmpi = (
-                self.model.resource_model.ncpus > 1
+                self.model.resource_model.chemsh_withmpi
             )
         self.node = submit(builder)
         self.node.label = self.model.resource_model.process_label
@@ -271,7 +271,7 @@ class ChemShellProcess:
     def _submit_atomic_energies_workflow(self) -> None:
         """Submit the IsolatedAtomEnergy WorkChain."""
         builder = WorkflowFactory("chemshell.atomic_energies").get_builder()  # pyright: ignore[reportFunctionMemberAccess]
-        builder.code = load_code(self.model.resource_model.code_label)
+        builder.code = load_code(self.model.resource_model.chemsh_code)
         if self.model.structure_model.has_file:
             builder.structure = self.model.structure_model.structure_file
         else:
@@ -287,15 +287,15 @@ class ChemShellProcess:
         # The IsolatedAtomicEnergiesWorkChain forwards these options to each of
         # its per-atom sub-calculations.
         builder.chemsh.metadata.options.resources = {
-            "num_mpiprocs_per_machine": self.model.resource_model.ncpus,
-            "num_cores_per_machine": self.model.resource_model.ncpus,
+            "num_mpiprocs_per_machine": self.model.resource_model.chemsh_num_mpiprocs,
+            "num_cores_per_machine": self.model.resource_model.chemsh_num_mpiprocs,
             "num_machines": 1,
-            "tot_num_mpiprocs": self.model.resource_model.ncpus,
+            "tot_num_mpiprocs": self.model.resource_model.chemsh_num_mpiprocs,
         }
         # Only set ``withmpi`` when the code itself does not declare it.
         if builder.code.with_mpi is None:
             builder.chemsh.metadata.options.withmpi = (
-                self.model.resource_model.ncpus > 1
+                self.model.resource_model.chemsh_withmpi
             )
         self.node = submit(builder)
         self.node.label = self.model.resource_model.process_label
@@ -308,7 +308,7 @@ class ChemShellProcess:
         # TODO: Register BatchProcessWorkChain as aiida entrypoint
 
         builder = BatchProcessWorkChain.get_builder()
-        builder.code = load_code(self.model.resource_model.code_label)
+        builder.code = load_code(self.model.resource_model.chemsh_code)
         builder.combine_results = self.model.workflow_model.combine_batch_results
 
         # Shared QM theory parameters applied to every item in the batch.
@@ -351,14 +351,16 @@ class ChemShellProcess:
             builder.structure_files = {"input_file": structure_file}
 
         builder.calc.metadata.options.resources = {
-            "num_mpiprocs_per_machine": self.model.resource_model.ncpus,
-            "num_cores_per_machine": self.model.resource_model.ncpus,
+            "num_mpiprocs_per_machine": self.model.resource_model.chemsh_num_mpiprocs,
+            "num_cores_per_machine": self.model.resource_model.chemsh_num_mpiprocs,
             "num_machines": 1,
-            "tot_num_mpiprocs": self.model.resource_model.ncpus,
+            "tot_num_mpiprocs": self.model.resource_model.chemsh_num_mpiprocs,
         }
         # Only set ``withmpi`` when the code itself does not declare it.
         if builder.code.with_mpi is None:
-            builder.calc.metadata.options.withmpi = self.model.resource_model.ncpus > 1
+            builder.calc.metadata.options.withmpi = (
+                self.model.resource_model.chemsh_withmpi
+            )
 
         self.node = submit(builder)
         self.node.label = self.model.resource_model.process_label

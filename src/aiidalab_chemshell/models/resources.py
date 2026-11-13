@@ -6,8 +6,9 @@ import traitlets as tl
 class ComputationalResourcesModel(tl.HasTraits):
     """Model for the resource setup stage."""
 
-    code_label = tl.Unicode("", allow_none=True).tag(sync=True)
-    ncpus = tl.Int(4).tag(sync=True)
+    chemsh_code = tl.Unicode("", allow_none=True).tag(sync=True)
+    chemsh_withmpi = tl.Bool(True).tag(sync=True)
+    chemsh_num_mpiprocs = tl.Int(4).tag(sync=True)
     process_label = tl.Unicode("").tag(sync=True)
     process_description = tl.Unicode("").tag(sync=True)
     submitted = tl.Bool(False).tag(sync=True)
@@ -29,7 +30,7 @@ class ComputationalResourcesModel(tl.HasTraits):
         bool
             True if all inputs are valid, False otherwise.
         """
-        if not self.code_label:
+        if not self.chemsh_code:
             print("ERROR: No code selected.")
             return False
         return True
