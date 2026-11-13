@@ -64,15 +64,21 @@ def test_validate_model_requires_force_field_for_mm():
 
 def _run_submit(model):
     """Run submit_process with AiiDA calls mocked, returning the builder."""
-    builder = SimpleNamespace()
+    # ``builder.calc`` mirrors the sub-namespace a real AiiDA ProcessBuilder
+    # auto-vivifies for an exposed sub-process; a bare SimpleNamespace needs
+    # it pre-populated since it has no such auto-vivification behaviour.
+    builder = SimpleNamespace(
+        calc=SimpleNamespace(metadata=SimpleNamespace(options=SimpleNamespace()))
+    )
     workchain = mock.Mock()
     workchain.get_builder.return_value = builder
+    code = SimpleNamespace(with_mpi=None)
     with (
         mock.patch(
             "aiida_chemshell.workflows.batch_calculation.BatchProcessWorkChain",
             workchain,
         ),
-        mock.patch("aiidalab_chemshell.process.load_code", return_value="CODE"),
+        mock.patch("aiidalab_chemshell.process.load_code", return_value=code),
         mock.patch("aiidalab_chemshell.process.Dict", side_effect=lambda d: d),
         mock.patch(
             "aiidalab_chemshell.process.submit", return_value=mock.Mock()
@@ -111,4 +117,11 @@ def test_submit_builds_qm_parameters():
         "functional": "B3LYP",
         "basis": "cc-pvdz",
     }
-    assert builder.code == "CODE"
+    assert builder.code.with_mpi is None
+    assert builder.calc.metadata.options.resources == {
+        "num_mpiprocs_per_machine": 4,
+        "num_cores_per_machine": 4,
+        "num_machines": 1,
+        "tot_num_mpiprocs": 4,
+    }
+    assert builder.calc.metadata.options.withmpi is True
