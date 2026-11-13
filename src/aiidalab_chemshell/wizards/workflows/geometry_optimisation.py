@@ -2,10 +2,11 @@
 
 import ipywidgets as ipw
 from aiida_chemshell.utils import ChemShellQMTheory
-from alc_aiidalab_widgets.widgets import FileUploadWidget, LoadingWidget
+from alc_aiidalab_widgets.widgets import LoadingWidget
 from traitlets import link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
+from aiidalab_chemshell.common.force_field_selector import ForceFieldSelectionWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
 
@@ -42,7 +43,7 @@ class ChemShellOptionsWidget(ipw.VBox):
         )
 
         # Force Field File
-        self.ff_file = FileUploadWidget(description="Force Field:")
+        self.ff_file = ForceFieldSelectionWidget()
 
         self.children = [self.header, LoadingWidget()]
 

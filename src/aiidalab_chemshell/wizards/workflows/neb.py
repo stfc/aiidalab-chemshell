@@ -2,9 +2,10 @@
 
 import ipywidgets as ipw
 from aiida_chemshell.utils import ChemShellQMTheory
-from alc_aiidalab_widgets.widgets import FileUploadWidget, LoadingWidget
+from alc_aiidalab_widgets.widgets import LoadingWidget
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
+from aiidalab_chemshell.common.force_field_selector import ForceFieldSelectionWidget
 from aiidalab_chemshell.common.structure_uploader import StructureSelectionWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
@@ -117,8 +118,8 @@ class NEBOptionsWidget(ipw.VBox):
         ipw.link((self.qm_region_text, "value"), (self.model, "qm_region"))
 
         # Force Field File
-        self.ff_file = FileUploadWidget(description="Force Field:")
-        ipw.link((self.ff_file, "file"), (self.model, "force_field"))
+        self.ff_file = ForceFieldSelectionWidget()
+        ipw.dlink((self.ff_file, "force_field"), (self.model, "force_field"))
 
         self._render_basic_options()
         return
@@ -181,5 +182,8 @@ class NEBOptionsWidget(ipw.VBox):
     def disable(self, val: bool = True) -> None:
         """Disable the input fields within the widget."""
         for child in self.children:
-            child.disabled = val
+            if child is self.ff_file:
+                self.ff_file.disable(val)
+            else:
+                child.disabled = val
         return

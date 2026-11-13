@@ -70,7 +70,7 @@ class WorkflowWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
         # ipw.dlink((self.workflow_tabs, "selected_index"), (self.model, "workflow"))
         self.workflow_tabs.observe(self._update_selected_workflow, "selected_index")
         ipw.dlink(
-            (self.workflow_tabs.children[0].ff_file, "file"),
+            (self.workflow_tabs.children[0].ff_file, "force_field"),
             (self.model, "force_field"),
         )
 
