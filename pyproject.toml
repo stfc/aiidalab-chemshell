@@ -1,27 +1,73 @@
 [build-system]
 requires = ["setuptools>=62.6"]
-build-backend = "setuptools.build_meta" 
+build-backend = "setuptools.build_meta"
 
+
+[project]
+name = "aiidalab-chemshell"
+version = "0.3.3"
+description = "ChemShell plugin for the AiiDAlab web-based UI framework enabling complex multi-scale chemical modelling workflows using mixed QM/MM approaches."
+readme = { file = "README.md", content-type = "text/markdown" }
+license = { file = "LICENSE" }
+authors = [
+    { name = "Dr. Benjamin T. Speake", email = "benjamin.speake@stfc.ac.uk" },
+]
+requires-python = ">=3.12"
+classifiers = [
+    "Framework :: AiiDA",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Development Status :: 4 - Beta",
+]
+dependencies = [
+    "aiida-core>=2.7",
+    "aiidalab-widgets-base",
+    "aiida-chemshell>=0.3.2",
+    "alc-aiidalab-widgets>=0.1.0",
+    "rdkit",
+    "weas-widget",
+]
+
+[project.urls]
+Homepage = "https://github.com/stfc/aiidalab-chemshell"
+Logo = "https://raw.githubusercontent.com/stfc/aiidalab-chemshell/refs/heads/main/images/chemshell.png"
+Source = "https://github.com/stfc/aiidalab-chemshell"
+"Bug Tracker" = "https://github.com/stfc/aiidalab-chemshell/issues"
+Documentation = "https://stfc.github.io/aiidalab-chemshell"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-cov>=6.0", "ruff>=0.11.0", "pre-commit"]
+docs = ["sphinx>=8.0.2", "piccolo-theme>=0.14.0", "sphinx-toolbox", "numpydoc"]
+
+[tool.aiidalab]
+title = "ChemShell"
+categories = ["quantum", "classical"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.ruff]
-target-version = "py310"
-exclude = ["conf.py",]
+target-version = "py312"
+exclude = ["conf.py"]
 
 [tool.ruff.lint]
 select = [
     # flake8-bugbear
     "B",
     # pylint
-    "C", "R",
+    "C",
+    "R",
     # pydocstyle
     "D",
     # pycodestyle
-    "E", "W",
+    "E",
+    "W",
     # Pyflakes
-    "F", "FA",
+    "F",
+    "FA",
     # isort
     "I",
     # pep8-naming
