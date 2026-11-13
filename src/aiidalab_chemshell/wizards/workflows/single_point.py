@@ -2,11 +2,10 @@
 
 import ipywidgets as ipw
 from aiida_chemshell.utils import ChemShellQMTheory
-from alc_aiidalab_widgets.widgets import FileUploadWidget
+from alc_aiidalab_widgets.widgets import FileUploadWidget, LoadingWidget
 from traitlets import Bool, HasTraits, link
 
 from aiidalab_chemshell.common.chemshell import BasisSetOptions
-from aiidalab_chemshell.common.utils import LoadingWidget
 from aiidalab_chemshell.models.workflow import ChemShellWorkflowModel
 
 
