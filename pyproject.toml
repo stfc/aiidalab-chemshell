@@ -20,7 +20,7 @@ classifiers = [
     "Development Status :: 4 - Beta",
 ]
 dependencies = [
-    "aiida-core>=2.7",
+    "aiida-core>=2.7,<3",
     "aiidalab-widgets-base",
     "aiida-chemshell>=0.3.2",
     "alc-aiidalab-widgets>=0.3.1",
