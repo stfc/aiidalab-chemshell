@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aiidalab-chemshell"
-version = "0.3.3"
+version = "0.4.0"
 description = "ChemShell plugin for the AiiDAlab web-based UI framework enabling complex multi-scale chemical modelling workflows using mixed QM/MM approaches."
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { file = "LICENSE" }
