@@ -2,7 +2,6 @@
 
 from datetime import datetime
 
-import aiidalab_widgets_base as awb
 import ipywidgets as ipw
 from aiida_chemshell.calculations.base import ChemShellCalculation
 from aiida_chemshell.workflows.batch_calculation import BatchProcessWorkChain
@@ -13,6 +12,7 @@ from IPython.display import display
 
 from aiidalab_chemshell.common.navigation import QuickAccessButtons
 from aiidalab_chemshell.common.node_viewers import CustomAiidaNodeViewWidget
+from aiidalab_chemshell.common.process_tree import ProcessNodesTreeWidget
 from aiidalab_chemshell.common.theme import (
     APP_ROOT_CLASS,
     chemshell_appbar,
@@ -113,7 +113,7 @@ class HistoryAppView(ipw.VBox):
         )
         self.lookup_widget.observe(self._update_node_view, "data_object")
 
-        self.node_tree = awb.ProcessNodesTreeWidget()
+        self.node_tree = ProcessNodesTreeWidget()
         ipw.dlink((self.model, "process_uuid"), (self.node_tree, "value"))
         self.node_view = CustomAiidaNodeViewWidget()
         ipw.dlink(

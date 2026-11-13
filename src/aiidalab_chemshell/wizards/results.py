@@ -4,6 +4,7 @@ import aiidalab_widgets_base as awb
 import ipywidgets as ipw
 
 from aiidalab_chemshell.common.node_viewers import CustomAiidaNodeViewWidget
+from aiidalab_chemshell.common.process_tree import ProcessNodesTreeWidget
 from aiidalab_chemshell.common.utils import add_button_style_class
 from aiidalab_chemshell.models.results import ResultsModel
 
@@ -62,7 +63,7 @@ class ResultsWizardStep(ipw.VBox, awb.WizardAppWidgetStep):
             )
             self.children = [msg]
         else:
-            self.node_tree = awb.ProcessNodesTreeWidget()
+            self.node_tree = ProcessNodesTreeWidget()
             ipw.dlink((self.model, "process_uuid"), (self.node_tree, "value"))
             self.node_view = CustomAiidaNodeViewWidget()
             ipw.dlink(
