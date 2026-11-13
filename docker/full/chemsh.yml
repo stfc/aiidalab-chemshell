@@ -1,4 +1,4 @@
-label: chemsh
+label: chemsh-v26.0.0
 description: ChemShell (parallel)
 computer: localhost
 filepath_executable: /opt/chemsh-py/bin/gnu/chemsh.x
